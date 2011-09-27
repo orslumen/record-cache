@@ -1,0 +1,1 @@
+require 'record_cache'

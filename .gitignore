@@ -1,0 +1,13 @@
+.DS_Store
+/.bundle
+/.project
+/.loadpath
+/.rvmrc
+/coverage
+/doc
+/pkg
+/tags
+/spec/log
+*.log
+*.sqlite3
+
