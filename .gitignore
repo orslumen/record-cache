@@ -9,5 +9,6 @@
 /tags
 /spec/log
 *.log
+*.gem
 *.sqlite3
 

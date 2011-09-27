@@ -41,7 +41,7 @@ Typical Example: /app/models/person.rb:
 
 Example with Index Cache: /app/models/permission.rb:
 
-    cache_records :store => :shared, :key => "perm", :index => [:person_id] 
+    cache_records :store => :shared, :key => "perm", :index => [:person_id]
 
 Example with Request Cache: /app/models/account.rb:
 
@@ -50,7 +50,7 @@ Example with Request Cache: /app/models/account.rb:
 The following options are available:
 
 - <a name="store" />`:store`: The name of the Cache Store for the Records (default: `Rails.cache`)
-    
+
     _@see Initializer section above how to define named Cache Stores_
 
 - <a name="key" />`:key`: Provide a short (unique) name to be used in the cache keys (default: `<model>.name`)
@@ -60,18 +60,18 @@ The following options are available:
 - <a name="request_cache" />`:request_cache`: Set to true to switch on Request Caching (default: `false`)
 
     _In case the same Record is (always) queried multiple times during a single request from different locations,
-     e.g. from a helper and from a model, the Record can be cached in the Request Scope by setting this option to +true+.  
-     **Important**: Add to application_controller.rb: `before_filter { |c| RecordCache::Strategy::RequestCache.clear }`  
+     e.g. from a helper and from a model, the Record can be cached in the Request Scope by setting this option to +true+.
+     **Important**: Add to application_controller.rb: `before_filter { |c| RecordCache::Strategy::RequestCache.clear }`
      Note: In most cases you should be able to use an instance variable in the controller (or helper) instead._
- 
+
 - <a name="index" />`:index`: An array of `:belongs_to` attributes to cache `:has_many` relations (default: `[]`)
 
-    _`has_many` relations will lead to queries like: `SELECT * FROM permissions WHERE permission.person_id = 10`  
+    _`has_many` relations will lead to queries like: `SELECT * FROM permissions WHERE permission.person_id = 10`
       As Record Cache only caches records by ID, this query would always hit the DB. If an index is set
       on person_id (like in the example above), Record Cache will keep track of the Permission IDs per
-      Person ID.  
+      Person ID.
       Using that information the query will be translated to: `SELECT * FROM permissions WHERE permission.id IN (14,15,...)`
-      and the permissions can be retrieved from cache.  
+      and the permissions can be retrieved from cache.
       Note: The administration overhead for the Permission IDs per Person ID leads to more calls to the Version Store and the Record
       Store. Whether or not it is profitable to add specific indexes for has_many relations will differ per use-case._
 
@@ -95,7 +95,7 @@ RSpec 2 example, in spec/spec_helper.rb:
         RecordCache::Base.version_store.reset!
       end
     end
-    
+
 Cucumber example, in features/support/env.rb:
 
     require 'record_cache/test/resettable_version_store'
@@ -118,7 +118,7 @@ Restrictions
 
 #### Caveats
 
-1. Record Cache sorting mimics the MySQL sort order being case-insensitive and using collation.  
+1. Record Cache sorting mimics the MySQL sort order being case-insensitive and using collation.
    _If you need a different sort order, check out the code in `<gem>/lib/record_cache/strategy/base.rb`._
 
 2. Using `update_all` to modify attributes used in the [:index option](#index) will lead to stale results.
@@ -131,9 +131,9 @@ Restrictions
    `:counter_cache` back to model A, the `<model B>_count` attribute will contain stale results. To solve this, add an
    after_save hook to model A and update the `<model B>_count` attribute there in case the `has_many` relation was loaded.
 
-5. When using Dalli as a MemCache client, multi_read actions may be 50x slower than normal reads, 
+5. When using Dalli as a MemCache client, multi_read actions may be 50x slower than normal reads,
    @see https://github.com/mperham/dalli/issues/106
-   If the same applies to your environment, add the following at the top of /config/initializers/record_cache.rb:  
+   If the same applies to your environment, add the following at the top of /config/initializers/record_cache.rb:
      `RecordCache::MultiRead.disable(ActiveSupport::Cache::DalliStore)`
 
 
@@ -197,17 +197,17 @@ ID cache:
 - `:update`: similar to :create
 
 - `:destroy`: remove the record from the Version Store
- 
+
 Index cache:
 
-- `:create`: increment Version Store for each index that contains the indexed attribute value of this record.  
+- `:create`: increment Version Store for each index that contains the indexed attribute value of this record.
              In case the IDs in this group are cached and fresh, add the ID of the new record to the group and store
              the updated list of IDs in the Records Store.
 
 - `:update`: For each index that is included in the changed attribute, apply the :destoy logic to the old value
              and the :create logic to the new value.
 
-- `:destroy`: increment Version Store for each index that contains the indexed attribute value of this record.   
+- `:destroy`: increment Version Store for each index that contains the indexed attribute value of this record.
               In case the IDs in this group are current cached and fresh, remove the ID of the record from the group and store
               the updated list of IDs in the Records Store.
 
@@ -225,7 +225,7 @@ Installation
 
 Add the following line to your Gemfile:
 
-gem 'record_cache'
+gem 'record-cache'
 
 
 Development
@@ -237,3 +237,4 @@ Development
 
 ----
 Copyright (c) 2011 Orslumen, released under the MIT license
+
