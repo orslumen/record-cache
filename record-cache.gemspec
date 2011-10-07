@@ -16,9 +16,9 @@ Gem::Specification.new do |s|
   s.rdoc_options     = ["--charset=UTF-8"]
   s.require_path     = "lib"
 
-  s.add_runtime_dependency "rails", ["3.0.10"]
+  s.add_runtime_dependency "rails", ["> 3.0"] # use ["~> 3.0"] when testing active_record_30 code
 
-  s.add_development_dependency "activerecord", ["3.0.10"]
+  s.add_development_dependency "activerecord", ["> 3.0"] # use ["~> 3.0"] when testing active_record_30 code
   s.add_development_dependency "sqlite3"
   s.add_development_dependency "rake"
   s.add_development_dependency "rcov"

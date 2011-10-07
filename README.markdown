@@ -108,7 +108,7 @@ Cucumber example, in features/support/env.rb:
 Restrictions
 ------------
 
-1. This gem is dependent on Rails 3.0 (3.1 support will follow).
+1. This gem is dependent on Rails 3
 
 2. Only Active Record is supported as a data store.
 
@@ -231,9 +231,13 @@ gem 'record-cache'
 Development
 -----------
 
-    $ bundle install
+    $ bundle
 
+    # run the specs
     $ rake
+
+    # run a single spec
+    $ bundle exec rspec ./spec/lib/strategy/base_spec.rb:61
 
 ----
 Copyright (c) 2011 Orslumen, released under the MIT license

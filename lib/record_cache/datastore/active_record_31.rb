@@ -27,14 +27,18 @@ module RecordCache
         def find_by_sql_with_record_cache(*args)
            # no caching please
           return find_by_sql_without_record_cache(*args) unless record_cache?
-
+          
           # check the piggy-back'd ActiveRelation record to see if the query can be retrieved from cache
-          sql = args[0]
-          arel = sql.instance_variable_get(:@arel)
-          query = arel ? RecordCache::Arel::QueryVisitor.new.accept(arel.ast) : nil
+          arel = args[0]
+          if arel.is_a?(String)
+            arel = arel.instance_variable_get(:@arel)
+            puts "TODO: RECORD_CACHE !!!!!!!! Found String with arel piggyback: #{arel}"
+          end
+
+          query = arel ? RecordCache::Arel::QueryVisitor.new(args[1]).accept(arel.ast) : nil
           cacheable = query && record_cache.cacheable?(query)
           # log only in debug mode!
-          RecordCache::Base.logger.debug("#{cacheable ? 'Fetch from cache' : 'Not cacheable'} (#{query}): SQL = #{sql}") if RecordCache::Base.logger.debug?
+          RecordCache::Base.logger.debug("#{cacheable ? 'Fetch from cache' : 'Not cacheable'} (#{query}): SQL = #{arel.to_sql}") if RecordCache::Base.logger.debug?
           # retrieve the records from cache if the query is cacheable otherwise go straight to the DB
           cacheable ? record_cache.fetch(query) : find_by_sql_without_record_cache(*args)
         end
@@ -76,8 +80,9 @@ module RecordCache
     # Only accepts single select queries with equality where statements
     # Rejects queries with grouping / having / offset / etc.
     class QueryVisitor < ::Arel::Visitors::Visitor
-      def initialize
+      def initialize(bindings)
         super()
+        @bindings = (bindings || []).inject({}){ |h, cv| column, value = cv; h[column.name] = value; h}
         @cacheable  = true
         @query = ::RecordCache::Query.new
       end
@@ -191,10 +196,13 @@ module RecordCache
       alias :visit_Arel_Attributes_Boolean   :visit_Arel_Attributes_Attribute
 
       def visit_Arel_Nodes_Equality o
-        equality = [visit(o.left), visit(o.right)]
-#        equality.reverse! if equality.last.is_a?(Symbol) || equality.first.is_a?(Fixnum)
-#        p "  =====> equality found: #{equality.first.inspect}@#{equality.first.class.name} => #{equality.last.inspect}@#{equality.last.class.name}"
-        @query.where(equality.first, equality.last)
+        key, value = visit(o.left), visit(o.right)
+        if value.to_s == "?"
+          # puts "bindings: #{@bindings.inspect}, key = #{key.to_s}"
+          value = @bindings[key.to_s] || "?" 
+        end
+        # puts "  =====> equality found: #{key.inspect}@#{key.class.name} => #{value.inspect}@#{value.class.name}"
+        @query.where(key, value)
       end
       alias :visit_Arel_Nodes_In                 :visit_Arel_Nodes_Equality
 
@@ -247,6 +255,10 @@ module RecordCache
     end
   end
 
+end
+
+module RecordCache
+  
   # Patch ActiveRecord::Relation to make sure update_all will invalidate all referenced records
   module ActiveRecord
     module UpdateAll
@@ -299,12 +311,12 @@ module RecordCache
       end
 
       module InstanceMethods
-        def delete_records_with_record_cache(records)
+        def delete_records_with_record_cache(records, method)
           # invalidate :id cache for all records
           records.each{ |record| record.class.record_cache.invalidate(record.id) if record.class.record_cache? unless record.new_record? }
           # invalidate the referenced class for the attribute/value pair on the index cache
-          @reflection.klass.record_cache.invalidate(@reflection.primary_key_name.to_sym, @owner.id) if @reflection.klass.record_cache?
-          delete_records_without_record_cache(records)
+          @reflection.klass.record_cache.invalidate(@reflection.foreign_key.to_sym, @owner.id) if @reflection.klass.record_cache?
+          delete_records_without_record_cache(records, method)
         end
       end
     end
