@@ -239,6 +239,14 @@ Development
     # run a single spec
     $ bundle exec rspec ./spec/lib/strategy/base_spec.rb:61
 
+Deploying the gem:
+
+    # Don't forget to update the version in lib/record_cache/version.rb
+    $ git tag -a v0.1.1 -m 'version 0.1.1'
+    $ git push origin master --tags
+    $ gem update --system
+    $ gem build record-cache.gemspec
+    $ gem push record-cache-0.1.1.gem
+
 ----
 Copyright (c) 2011 Orslumen, released under the MIT license
-
