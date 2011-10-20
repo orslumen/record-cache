@@ -1,8 +1,8 @@
 PATH
   remote: .
   specs:
-    record-cache (0.1.0)
-      rails (> 3.0)
+    record-cache (0.1.2)
+      rails (>= 3.0)
 
 GEM
   remote: http://rubygems.org/
@@ -103,7 +103,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  activerecord (> 3.0)
+  activerecord (>= 3.0)
   database_cleaner
   rake
   rcov

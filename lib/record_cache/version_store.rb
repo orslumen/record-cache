@@ -23,7 +23,7 @@ module RecordCache
     end
 
     # In case the version store did not have a key anymore, call this methods
-    # to reset the key with a unique new key
+    # to reset the key with a (unique) new version
     def renew(key)
       new_version = (Time.current.to_f * 10000).to_i
       @store.write(key, new_version)
@@ -43,7 +43,7 @@ module RecordCache
       version
     end
     
-    # Delete key from the version store, in case the record(s) are destroyed
+    # Delete key from the version store (records cached in the Record Store belonging to this key will become unreachable)
     def delete(key)
       deleted = @store.delete(key)
       RecordCache::Base.logger.debug("Version Store: deleted #{key}") if RecordCache::Base.logger.debug?

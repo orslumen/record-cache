@@ -29,14 +29,6 @@ describe RecordCache::Strategy::Base do
     Banana.record_cache[:id].send(:versioned_key, "rc/Banana/1", 2312423).should == "rc/Banana/1v2312423"
   end
 
-  it "should serialize a record (currently Active Record only)" do
-    Banana.record_cache[:id].send(:serialize, Banana.find(1)).should == {:a=>{"name"=>"Blue Banana 1", "id"=>1, "store_id"=>2, "person_id"=>4}, :c=>"Banana"}
-  end
-
-  it "should deserialize a record (currently Active Record only)" do
-    Banana.record_cache[:id].send(:deserialize, {:a=>{"name"=>"Blue Banana 1", "id"=>1, "store_id"=>2, "person_id"=>4}, :c=>"Banana"}).should == Banana.find(1)
-  end
-
   context "filter" do
     it "should apply filter on :id cache hits" do
       lambda{ @apples = Apple.where(:id => [1,2]).where(:name => "Adams Apple 1").all }.should use_cache(Apple).on(:id)

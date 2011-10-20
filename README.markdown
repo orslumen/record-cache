@@ -11,6 +11,13 @@ data stores may be added in the future.
 Usage
 -----
 
+#### Installation
+
+Add the following line to your Gemfile:
+
+    gem 'record-cache'
+
+
 #### Initializer
 
 In /config/initializers/record_cache.rb:
@@ -37,15 +44,23 @@ Define the Caching Strategy in your models.
 
 Typical Example: /app/models/person.rb:
 
-    cache_records :store => :shared, :key => "pers"
+    class Person < ActiveRecord::Base
+      cache_records :store => :shared, :key => "pers"
+    end
 
 Example with Index Cache: /app/models/permission.rb:
 
-    cache_records :store => :shared, :key => "perm", :index => [:person_id]
+    class Permission < ActiveRecord::Base
+      cache_records :store => :shared, :key => "perm", :index => [:person_id]
+
+      belongs_to :person
+    end
 
 Example with Request Cache: /app/models/account.rb:
 
-    cache_records :store => :local, :key => "acc", :request_cache => true
+    class Account < ActiveRecord::Base
+      cache_records :store => :local, :key => "acc", :request_cache => true
+    end
 
 The following options are available:
 
@@ -60,18 +75,18 @@ The following options are available:
 - <a name="request_cache" />`:request_cache`: Set to true to switch on Request Caching (default: `false`)
 
     _In case the same Record is (always) queried multiple times during a single request from different locations,
-     e.g. from a helper and from a model, the Record can be cached in the Request Scope by setting this option to +true+.
-     **Important**: Add to application_controller.rb: `before_filter { |c| RecordCache::Strategy::RequestCache.clear }`
+     e.g. from a helper and from a model, the Record can be cached in the Request Scope by setting this option to +true+.  
+     **Important**: Add to application_controller.rb: `before_filter { |c| RecordCache::Strategy::RequestCache.clear }`  
      Note: In most cases you should be able to use an instance variable in the controller (or helper) instead._
 
 - <a name="index" />`:index`: An array of `:belongs_to` attributes to cache `:has_many` relations (default: `[]`)
 
-    _`has_many` relations will lead to queries like: `SELECT * FROM permissions WHERE permission.person_id = 10`
+    _`has_many` relations will lead to queries like: `SELECT * FROM permissions WHERE permission.person_id = 10`  
       As Record Cache only caches records by ID, this query would always hit the DB. If an index is set
       on person_id (like in the example above), Record Cache will keep track of the Permission IDs per
-      Person ID.
+      Person ID.  
       Using that information the query will be translated to: `SELECT * FROM permissions WHERE permission.id IN (14,15,...)`
-      and the permissions can be retrieved from cache.
+      and the permissions can be retrieved from cache.  
       Note: The administration overhead for the Permission IDs per Person ID leads to more calls to the Version Store and the Record
       Store. Whether or not it is profitable to add specific indexes for has_many relations will differ per use-case._
 
@@ -119,12 +134,12 @@ Restrictions
 #### Caveats
 
 1. Record Cache sorting mimics the MySQL sort order being case-insensitive and using collation.
-   _If you need a different sort order, check out the code in `<gem>/lib/record_cache/strategy/base.rb`._
+   _If you need a different sort order, check out the code in `<gem>/lib/record_cache/strategy/util.rb`._
 
 2. Using `update_all` to modify attributes used in the [:index option](#index) will lead to stale results.
 
 3. When using `<model>.transaction do ... end`, make sure wrap it in `RecordCache::Base.without_record_cache do ... end`.
-   During the transaction the after_commit callbacks are delayed until the whole transaction completed successfullt. As
+   During the transaction the after_commit callbacks are delayed until the whole transaction completed successfully. As
    a result the records fetched from the Record Cache within that transaction will not contain the uncommitted changes yet.
 
 4. (Uncommon) If you have a model (A) with a `has_many :autosave => true` relation to another model (B) that defines a
@@ -142,7 +157,7 @@ Explain
 
 #### Retrieval
 
-Each query is parsed and sent to record_cache before it is executed to check if the query is cacheable.
+Each query is parsed and sent to Record Cache before it is executed to check if the query is cacheable.
 A query is cacheable if:
 
 - it contains at least one `where(:id => ...)` or `where(<indexed attribute> => ...)` clause, and
@@ -211,21 +226,13 @@ Index cache:
               In case the IDs in this group are current cached and fresh, remove the ID of the record from the group and store
               the updated list of IDs in the Records Store.
 
-The `update_all` method of Active Record Relation is also overridden to make sure than mass-updates are processed correctly, e.g. used by the
+The `update_all` method of Active Record Relation is also overridden to make sure that mass-updates are processed correctly, e.g. used by the
 :counter_cache. As the details of the change are not known, all records that match the IDs mentioned in the update_all statement are invalidated by
 removing them from the Version Store.
 
 Finally for `has_many` relations, the `after_commit` hooks are not triggered on add and remove. Whether this is a bug or feature I do not know, but
 for Active Record the Has Many Association is patched to invalidate the Index Cache of the referenced (reflection) Record in case it has
 an [:index](#index) on the reverse `belongs_to` relation.
-
-
-Installation
-------------
-
-Add the following line to your Gemfile:
-
-gem 'record-cache'
 
 
 Development

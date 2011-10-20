@@ -12,7 +12,6 @@ module RecordCache
     end
 
     # Set equality of an attribute (usually found in where clause)
-    # Returns false if another attribute values was already set (making this query uncachable)
     def where(attribute, values)
       @wheres[attribute.to_sym] = values if attribute
     end
