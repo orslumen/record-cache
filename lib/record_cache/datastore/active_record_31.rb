@@ -30,10 +30,7 @@ module RecordCache
           
           # check the piggy-back'd ActiveRelation record to see if the query can be retrieved from cache
           arel = args[0]
-          if arel.is_a?(String)
-            arel = arel.instance_variable_get(:@arel)
-            puts "TODO: RECORD_CACHE !!!!!!!! Found String with arel piggyback: #{arel}"
-          end
+          arel = arel.instance_variable_get(:@arel) if arel.is_a?(String)
 
           query = arel ? RecordCache::Arel::QueryVisitor.new(args[1]).accept(arel.ast) : nil
           cacheable = query && record_cache.cacheable?(query)
@@ -80,6 +77,11 @@ module RecordCache
     # Only accepts single select queries with equality where statements
     # Rejects queries with grouping / having / offset / etc.
     class QueryVisitor < ::Arel::Visitors::Visitor
+      DESC = "DESC".freeze
+      BINDING_MARKER_1 = "?".freeze
+      BINDING_MARKER_2 = "\u0000".freeze
+      COMMA = ",".freeze
+
       def initialize(bindings)
         super()
         @bindings = (bindings || []).inject({}){ |h, cv| column, value = cv; h[column.name] = value; h}
@@ -138,10 +140,10 @@ module RecordCache
 
       def visit_Arel_Nodes_Grouping o
         return unless @cacheable
-        # "`calendars`.account_id = 5"
+        # `calendars`.account_id = 5
         if @table_name && o.expr =~ /^`#{@table_name}`\.`?(\w*)`?\s*=\s*(\d+)$/
           @cacheable = @query.where($1, $2.to_i)
-        # "`service_instances`.`id` IN (118,80,120,82)"
+        # `service_instances`.`id` IN (118,80,120,82)
         elsif o.expr =~ /^`#{@table_name}`\.`?(\w*)`?\s*IN\s*\(([\d\s,]+)\)$/
           @cacheable = @query.where($1, $2.split(',').map(&:to_i))
         else
@@ -167,10 +169,10 @@ module RecordCache
       end
       
       def handle_order_by(order)
-        order.to_s.split(",").each do |o|
+        order.to_s.split(COMMA).each do |o|
           # simple sort order (+peope.id+ can be replaced by +id+, as joins are not allowed anyways)
           if o.match(/^\s*([\w\.]*)\s*(|ASC|DESC|)\s*$/)
-            asc = $2 == "DESC" ? false : true
+            asc = $2 == DESC ? false : true
             @query.order_by($1.split('.').last, asc)
           else
             @cacheable = false
@@ -197,9 +199,10 @@ module RecordCache
 
       def visit_Arel_Nodes_Equality o
         key, value = visit(o.left), visit(o.right)
-        if value.to_s == "?"
+        # both ? and \u0000 are used to mark query bindings (thanks to Arkadiusz Kuryłowicz for the \u0000)
+        if value.to_s == BINDING_MARKER_1 || value.to_s == BINDING_MARKER_2
           # puts "bindings: #{@bindings.inspect}, key = #{key.to_s}"
-          value = @bindings[key.to_s] || "?" 
+          value = @bindings[key.to_s] || value
         end
         # puts "  =====> equality found: #{key.inspect}@#{key.class.name} => #{value.inspect}@#{value.class.name}"
         @query.where(key, value)

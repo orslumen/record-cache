@@ -151,6 +151,9 @@ Restrictions
    If the same applies to your environment, add the following at the top of /config/initializers/record_cache.rb:
      `RecordCache::MultiRead.disable(ActiveSupport::Cache::DalliStore)`
 
+6. The combination of Mongrel (Rack) and the Dalli `:threadsafe => false` option will lead to the following errors in
+   your log file: `undefined method `constantize’ for 0:Fixnum`. This is because Mongrel creates multiple threads.
+   To overcome this, set thread_save to true, or consider using a different webserver like Unicorn.
 
 Explain
 -------
