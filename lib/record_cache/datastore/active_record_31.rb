@@ -89,9 +89,9 @@ module RecordCache
         @query = ::RecordCache::Query.new
       end
 
-      def accept object
+      def accept ast
         super
-        @cacheable ? @query : nil
+        @cacheable && !ast.lock ? @query : nil
       end
 
       private
@@ -104,6 +104,8 @@ module RecordCache
       
       alias :visit_Arel_Nodes_TableAlias :not_cacheable
 
+      alias :visit_Arel_Nodes_Lock :not_cacheable
+      
       alias :visit_Arel_Nodes_Sum   :not_cacheable
       alias :visit_Arel_Nodes_Max   :not_cacheable
       alias :visit_Arel_Nodes_Avg   :not_cacheable

@@ -42,6 +42,11 @@ describe RecordCache::Strategy::IdCache do
       @apple2 = Apple.find(2)
     end
 
+    # @see https://github.com/orslumen/record-cache/issues/2
+    it "should not use the cache when a lock is used" do
+      lambda{ Apple.lock("any_lock").where(:id => 1).all }.should_not hit_cache(Apple)
+    end
+
     it "should use the cache when a single id is requested" do
       lambda{ Apple.where(:id => 1).all }.should hit_cache(Apple).on(:id).times(1)
     end
