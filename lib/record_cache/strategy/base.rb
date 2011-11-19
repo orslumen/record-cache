@@ -6,7 +6,7 @@ module RecordCache
         @base = base
         @strategy_id = strategy_id
         @record_store = record_store
-        @cache_key_prefix = "rc/#{options[:key] || @base.name}/".freeze
+        @cache_key_prefix = "rc/#{options[:key] || @base.name}/"
       end
 
       # Fetch all records and sort and filter locally
@@ -57,12 +57,12 @@ module RecordCache
 
       # retrieve the cache key for the given id, e.g. rc/person/14
       def cache_key(id)
-        "#{@cache_key_prefix}#{id}".freeze
+        "#{@cache_key_prefix}#{id}"
       end
   
       # retrieve the versioned record key, e.g. rc/person/14v1
       def versioned_key(cache_key, version)
-        "#{cache_key}v#{version.to_s}".freeze
+        "#{cache_key}v#{version.to_s}"
       end
   
     end
