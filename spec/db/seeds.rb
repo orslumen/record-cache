@@ -1,3 +1,4 @@
+# coding: utf-8
 ActiveRecord::Schema.define :version => 1 do
   
   # Make sure that at the beginning of the tests, NOTHING is known to Record Cache
