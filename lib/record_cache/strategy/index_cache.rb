@@ -14,8 +14,8 @@ module RecordCache
 
       # Can the cache retrieve the records based on this query?
       def cacheable?(query)
-        # allow limit of 1 for has_one and Class.find :id
-        query.where_id(@index) && (query.limit.nil? || query.limit == 1)
+        # allow limit of 1 for has_one
+        query.where_id(@index) && (query.limit.nil? || (query.limit == 1 && !query.sorted?))
       end
 
       # Handle create/update/destroy (use record.previous_changes to find the old values in case of an update)
