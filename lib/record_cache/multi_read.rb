@@ -6,6 +6,8 @@
 #
 # Important: Because of a bug in Dalli, read_multi is quite slow on some machines.
 #            @see https://github.com/mperham/dalli/issues/106
+require "set"
+
 module RecordCache
   module MultiRead
     @tested = Set.new
