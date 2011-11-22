@@ -52,8 +52,9 @@ describe RecordCache::Strategy::IndexCache do
       lambda { Apple.where(:store_id => 1).order("name ASC").all }.should hit_cache(Apple).on(:store_id).times(1)
     end
 
-    it "should not hit the cache for a single index id with limit" do
-      lambda { Apple.where(:store_id => 1).limit(1).all }.should_not hit_cache(Apple).on(:store_id)
+    #Allow limit == 1 by filtering records after cache hit.  Needed for has_one
+    it "should not hit the cache for a single index id with limit > 0" do
+      lambda { Apple.where(:store_id => 1).limit(2).all }.should_not hit_cache(Apple).on(:store_id)
     end
 
     it "should not hit the cache when an :id where clause is defined" do
