@@ -1,3 +1,4 @@
+# coding: utf-8
 $KCODE = 'UTF8'
 require 'spec_helper'
 
@@ -211,7 +212,7 @@ describe RecordCache::Strategy::Base do
   
   context "NotImplementedError" do
     before(:each) do
-      @invalid_strategy = RecordCache::Strategy::Base.new(Object, nil, nil, "key")
+      @invalid_strategy = RecordCache::Strategy::Base.new(Object, nil, nil, {:key => "key"})
     end
 
     it "should require record_change to be implemented" do
