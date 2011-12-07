@@ -325,6 +325,33 @@ module RecordCache
         end
       end
     end
+
+    module HasOne
+      class << self
+        def included(klass)
+          klass.extend ClassMethods
+          klass.send(:include, InstanceMethods)
+          klass.class_eval do
+            alias_method_chain :delete, :record_cache
+          end
+        end
+      end
+
+      module ClassMethods
+      end
+
+      module InstanceMethods
+        def delete_with_record_cache(method = options[:dependent])
+          # invalidate :id cache for all record
+          if load_target
+            target.class.record_cache.invalidate(record.id) if target.class.record_cache? unless target.new_record?
+          end
+          # invalidate the referenced class for the attribute/value pair on the index cache
+          @reflection.klass.record_cache.invalidate(@reflection.foreign_key.to_sym, @owner.id) if @reflection.klass.record_cache?
+          delete_without_record_cache(method)
+        end
+      end
+    end
   end
 
 end
@@ -333,3 +360,4 @@ ActiveRecord::Base.send(:include, RecordCache::ActiveRecord::Base)
 Arel::TreeManager.send(:include, RecordCache::Arel::TreeManager)
 ActiveRecord::Relation.send(:include, RecordCache::ActiveRecord::UpdateAll)
 ActiveRecord::Associations::HasManyAssociation.send(:include, RecordCache::ActiveRecord::HasMany)
+ActiveRecord::Associations::HasOneAssociation.send(:include, RecordCache::ActiveRecord::HasOne)

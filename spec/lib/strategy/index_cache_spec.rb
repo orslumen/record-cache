@@ -52,8 +52,9 @@ describe RecordCache::Strategy::IndexCache do
       lambda { Apple.where(:store_id => 1).order("name ASC").all }.should hit_cache(Apple).on(:store_id).times(1)
     end
 
-    it "should not hit the cache for a single index id with limit" do
-      lambda { Apple.where(:store_id => 1).limit(1).all }.should_not hit_cache(Apple).on(:store_id)
+    #Allow limit == 1 by filtering records after cache hit.  Needed for has_one
+    it "should not hit the cache for a single index id with limit > 0" do
+      lambda { Apple.where(:store_id => 1).limit(2).all }.should_not hit_cache(Apple).on(:store_id)
     end
 
     it "should not hit the cache when an :id where clause is defined" do
@@ -186,6 +187,8 @@ describe RecordCache::Strategy::IndexCache do
     before(:each) do
       @store1_apples = Apple.where(:store_id => 1).all
       @store2_apples = Apple.where(:store_id => 2).all
+      @address_1 = Address.where(:store_id => 1).all
+      @address_2 = Address.where(:store_id => 2).all
     end
 
     it "should invalidate single index" do
@@ -206,7 +209,7 @@ describe RecordCache::Strategy::IndexCache do
 
     it "should invalidate reflection indexes when a has_many relation is updated" do
       # assign different apples to store 2
-      lambda{ Apple.where(:store_id => 1).all }.should hit_cache(Apple).on(:store_id).times(1)
+      lambda{ Apple.where(:store_id => 1).first }.should hit_cache(Apple).on(:store_id).times(1)
       store2_apple_ids = @store2_apples.map(&:id).sort
       store1 = Store.find(1)
       store1.apple_ids = store2_apple_ids
@@ -217,6 +220,24 @@ describe RecordCache::Strategy::IndexCache do
       # there are no apples in Store 2 anymore (incremental cache update, as each apples in store 2 was saved separately)
       lambda{ @apples_2 = Apple.where(:store_id => 2).all }.should hit_cache(Apple).on(:store_id).times(1)
       @apples_2.should == []
+    end
+
+    it "should invalidate reflection indexes when a has_one relation is updated" do
+      # assign different address to store 2
+      lambda{ Address.where(:store_id => 1).limit(1).first }.should hit_cache(Address).on(:store_id).times(1)
+      store2 = Store.find(2)
+      store2_address = store2.address
+      Address.where(:store_id => 1).first.id == 1
+      store1 = Store.find(1)
+      store1.address = store2_address
+      store1.save!
+      Address.where(:store_id => 1).first.id == 2
+      # address for Store 1 should be the address that was for Store 2 (cache invalidated)
+      lambda{ @address_1 = Address.where(:store_id => 1).first }.should hit_cache(Address).on(:store_id).times(1)
+      @address_1.id.should == store2_address.id
+      # there are no address in Store 2 anymore (incremental cache update, as address for store 2 was saved separately)
+      lambda{ @address_2 = Address.where(:store_id => 2).first }.should hit_cache(Address).on(:store_id).times(1)
+      @address_2.should be_nil
     end
   end
 

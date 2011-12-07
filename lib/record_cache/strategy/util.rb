@@ -11,7 +11,7 @@ module RecordCache
         # creates a shallow clone with a version and without associations
         def serialize(record)
           {CLASS_KEY => record.class.name,
-           ATTRIBUTES_KEY => record.instance_variable_get(:@attributes)}.freeze
+           ATTRIBUTES_KEY => record.instance_variable_get(:@attributes)}
         end
 
         # deserialize a cached record
