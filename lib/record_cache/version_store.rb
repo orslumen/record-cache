@@ -26,7 +26,7 @@ module RecordCache
     # to reset the key with a (unique) new version
     def renew(key)
       new_version = (Time.current.to_f * 10000).to_i
-      @store.write(key, new_version)
+      @store.write(key, new_version, :raw => true)
       RecordCache::Base.logger.debug("Version Store: renew #{key}: nil => #{new_version}") if RecordCache::Base.logger.debug?
       new_version
     end
