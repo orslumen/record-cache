@@ -14,7 +14,8 @@ module RecordCache
 
       # Can the cache retrieve the records based on this query?
       def cacheable?(query)
-        query.where_id(@index) && query.limit.nil?
+        # allow limit of 1 for has_one
+        query.where_id(@index) && (query.limit.nil? || (query.limit == 1 && !query.sorted?))
       end
 
       # Handle create/update/destroy (use record.previous_changes to find the old values in case of an update)
@@ -57,7 +58,9 @@ module RecordCache
         # retrieve the ids from the DB if the result was not fresh
         ids = fetch_ids_from_db(versioned_key, value) unless ids
         # use the IdCache to retrieve the records based on the ids
-        @base.record_cache[:id].send(:fetch_records, ::RecordCache::Query.new({:id => ids}))
+        records = @base.record_cache[:id].send(:fetch_records, ::RecordCache::Query.new({:id => ids}))
+        records = records[0, query.limit] unless query.limit.nil? || records.nil?
+        records
       end
   
       private

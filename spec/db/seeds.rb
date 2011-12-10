@@ -1,3 +1,4 @@
+# coding: utf-8
 ActiveRecord::Schema.define :version => 1 do
   
   # Make sure that at the beginning of the tests, NOTHING is known to Record Cache
@@ -10,6 +11,10 @@ ActiveRecord::Schema.define :version => 1 do
   @adam_apples = Store.create!(:name => "Adams Apple Store", :owner => @adam)
   @blue_fruits = Store.create!(:name => "Blue Fruits", :owner => @blue)
   @cris_bananas = Store.create!(:name => "Chris Bananas", :owner => @cris)
+
+  @adam_apples_address = Address.create!(:name => "101 1st street", :store => @adam_apples)
+  @blue_fruits_address = Address.create!(:name => "102 1st street", :store => @blue_fruits)
+  @cris_bananas_address = Address.create!(:name => "103 1st street", :store => @cris_bananas)
 
   @fry = Person.create!(:name => "Fry", :birthday => Date.civil(1985,01,20), :height => 1.69)
   @chase = Person.create!(:name => "Chase", :birthday => Date.civil(1970,07,03), :height => 1.91)

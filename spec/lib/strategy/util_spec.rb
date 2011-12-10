@@ -1,3 +1,4 @@
+# coding: utf-8
 $KCODE = 'UTF8'
 require 'spec_helper'
 
