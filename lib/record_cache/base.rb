@@ -92,7 +92,7 @@ module RecordCache
       #   - use :store => :memory_store in case all records can easily fit in server memory
       #   - use :index => :account_id in case the records are (almost) always queried as a full set per account
       #   - use :index => :person_id for aggregated has_many associations
-      def cache_records(options)
+      def cache_records(options = {})
         @rc_dispatcher = RecordCache::Dispatcher.new(self) unless defined?(@rc_dispatcher)
         store = RecordCache::MultiRead.test(options[:store] ? RecordCache::Base.stores[options[:store]] || ActiveSupport::Cache.lookup_store(options[:store]) : (defined?(::Rails) ? Rails.cache : ActiveSupport::Cache.lookup_store(:memory_store)))
         # always register an ID Cache
