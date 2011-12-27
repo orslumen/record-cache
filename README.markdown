@@ -7,7 +7,6 @@ Record Cache transparantly stores Records in a Cache Store and retrieve those Re
 Cache invalidation is performed automatically when Records are created, updated or destroyed. Currently only Active Record is supported, but more
 data stores may be added in the future.
 
-
 Usage
 -----
 
@@ -76,7 +75,7 @@ The following options are available:
 
     _In case the same Record is (always) queried multiple times during a single request from different locations,
      e.g. from a helper and from a model, the Record can be cached in the Request Scope by setting this option to +true+.  
-     **Important**: Add to application_controller.rb: `before_filter { |c| RecordCache::Strategy::RequestCache.clear }`  
+     **Important**: Add to application_controller.rb: `prepend_before_filter { |c| RecordCache::Strategy::RequestCache.clear }`  
      Note: In most cases you should be able to use an instance variable in the controller (or helper) instead._
 
 - <a name="index" />`:index`: An array of `:belongs_to` attributes to cache `:has_many` relations (default: `[]`)
@@ -244,10 +243,16 @@ Development
     $ bundle
 
     # run the specs
-    $ rake
+    $ bundle exec rake spec
 
     # run a single spec
     $ bundle exec rspec ./spec/lib/strategy/base_spec.rb:61
+    
+    # make sure Rails 3.0 support is also fine:
+    $ vi record-cache.gemspec
+      replace [">= 3.0"] with [">= 3.0"], "< 3.1"
+    $ bundle update
+    $ bundle exec rake spec
 
 Deploying the gem:
 
@@ -257,6 +262,46 @@ Deploying the gem:
     $ gem update --system
     $ gem build record-cache.gemspec
     $ gem push record-cache-0.1.1.gem
+
+Debugging the gem:
+
+Switch on DEBUG logging (`config.log_level = :debug` in development.rb) to get more information on cache hits and misses.
+
+
+Release Notes
+-------------
+
+#### Version 1.0
+
+First version, with the following Strategies:
+
+1. Request Cache
+1. ID Cache
+1. Index Cache
+
+#### Version 1.1
+
+Added support for Rails 3.1
+
+#### Version 1.2
+
+Refactoring: Moved Serialization, Sorting and Filtering to separate Util class.
+
+Now it is possible to re-use MySQL style sorting (with collation) in your own app, e.g. by calling `RecordCache::Strategy::Util.sort!(Apple.all, :name)`.
+
+#### Version 1.3
+
+Fixed Bugs:
+1. "\u0000" is also used by Arel as a parameter query binding marker.
+1. https://github.com/orslumen/record-cache/issues/2: bypassing record_cache when selecting rows with lock
+
+Added:
+1. Release Notes ;)
+1. https://github.com/orslumen/record-cache/pull/3: Ruby 1.9 fixes, has_one support, Remove Freeze for Dalli encoding (Bryan Mundie)
+1. :unique_index option
+1. :cache_all option
+
+And updated the gemspec file.
 
 ----
 Copyright (c) 2011 Orslumen, released under the MIT license

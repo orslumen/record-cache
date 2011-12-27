@@ -5,8 +5,14 @@ describe RecordCache::Dispatcher do
     @apple_dispatcher = Apple.record_cache
   end
   
-  it "should raise an error when the same index is added twice" do
-    lambda { @apple_dispatcher.register(:store_id, RecordCache::Strategy::IdCache, nil, {}) }.should raise_error("Multiple record cache definitions found for 'store_id' on Apple")
+  it "should return the (ordered) strategy classes" do
+    RecordCache::Dispatcher.strategy_classes.should == [RecordCache::Strategy::RequestCache, RecordCache::Strategy::IdCache, RecordCache::Strategy::IndexCache]
+  end
+  
+  context "parse" do
+    it "should raise an error when the same index is added twice" do
+      lambda { Apple.cache_records(:index => :store_id) }.should raise_error("Multiple record cache definitions found for 'store_id' on Apple")
+    end
   end
   
   it "should return the Cache for the requested strategy" do

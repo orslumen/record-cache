@@ -29,16 +29,17 @@ module RecordCache
       # The ActiveSupport::Cache::Store instance that contains the current record(group) versions.
       # Note that it must point to a single Store shared by all webservers (defaults to Rails.cache)
       def version_store
-        @version_store ||= RecordCache::VersionStore.new(RecordCache::MultiRead.test(Rails.cache))
+        @version_store = Rails.cache unless @version_store
+        @version_store
       end
-      
-      # Register a store with a specific id for reference with :store in +cache_records+
+
+      # Register a cache store by id for future reference with the :store option for +cache_records+
       # e.g. RecordCache::Base.register_store(:server, ActiveSupport::Cache.lookup_store(:memory_store))
       def register_store(id, store)
         stores[id] = RecordCache::MultiRead.test(store)
       end
 
-      # The hash of stores (store_id => store)
+      # The hash of registered record stores (store_id => store)
       def stores
         @stores ||= {}
       end
@@ -78,14 +79,16 @@ module RecordCache
 
     module ClassMethods
       # Cache the instances of this model
-      # options:
+      # generic options:
       #   :store => the cache store for the instances, e.g. :memory_store, :dalli_store* (default: Rails.cache)
       #             or one of the store ids defined using +RecordCache::Base.register_store+
       #   :key   => provide a unique shorter key to limit the cache key length (default: model.name)
+      # 
+      # cache strategy specific options:
       #   :index => one or more attributes (Symbols) for which the ids are cached for the value of the attribute
       #   :request_cache => Set to true in case the exact same query is executed more than once during a single request
       #                     If set to true somewhere, make sure to add the following to your application controller:
-      #                     before_filter { |c| RecordCache::Strategy::RequestCache.clear }
+      #                     prepend_before_filter { |c| RecordCache::Strategy::RequestCache.clear }
       #
       # Hints:
       #   - Dalli is a high performance pure Ruby client for accessing memcached servers, see https://github.com/mperham/dalli
@@ -93,18 +96,13 @@ module RecordCache
       #   - use :index => :account_id in case the records are (almost) always queried as a full set per account
       #   - use :index => :person_id for aggregated has_many associations
       def cache_records(options = {})
-        @rc_dispatcher = RecordCache::Dispatcher.new(self) unless defined?(@rc_dispatcher)
-        store = RecordCache::MultiRead.test(options[:store] ? RecordCache::Base.stores[options[:store]] || ActiveSupport::Cache.lookup_store(options[:store]) : (defined?(::Rails) ? Rails.cache : ActiveSupport::Cache.lookup_store(:memory_store)))
-        # always register an ID Cache
-        record_cache.register(:id, ::RecordCache::Strategy::IdCache, store, options)
-        # parse :index option
-        [options[:index]].flatten.compact.map(&:to_sym).each do |index|
-          record_cache.register(index, ::RecordCache::Strategy::IndexCache, store, options.merge({:index => index}))
+        unless @rc_dispatcher
+          @rc_dispatcher = RecordCache::Dispatcher.new(self) 
+          # Callback for Data Store specific initialization
+          record_cache_init
         end
-        # parse :request_cache option
-        record_cache.register(:request_cache, ::RecordCache::Strategy::RequestCache, store, options) if options[:request_cache]
-        # Callback for Data Store specific initialization
-        record_cache_init
+        # parse the requested strategies from the given options
+        @rc_dispatcher.parse(options)
       end
 
       # Returns true if record cache is defined and active for this class

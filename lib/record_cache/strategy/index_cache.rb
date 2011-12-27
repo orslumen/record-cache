@@ -2,13 +2,21 @@ module RecordCache
   module Strategy
     class IndexCache < Base
   
+      # parse the options and return (an array of) instances of this strategy
+      def self.parse(base, record_store, options)
+        return nil unless options[:index]
+        raise ":index => #{options[:index].inspect} option cannot be used unless 'id' is present on #{base.name}" unless base.columns_hash['id']
+        [options[:index]].flatten.compact.map do |attribute|
+          type = base.columns_hash[attribute.to_s].try(:type)
+          raise "No column found for index '#{attribute}' on #{base.name}." unless type
+          raise "Incorrect type (expected integer, found #{type}) for index '#{attribute}' on #{base.name}." unless type == :integer
+          IndexCache.new(base, attribute, record_store, options)
+        end
+      end
+
       def initialize(base, strategy_id, record_store, options)
         super
-        @index = options[:index]
-        # check the index
-        type = @base.columns_hash[@index.to_s].try(:type)
-        raise "No column found for index '#{@index}' on #{@base.name}." unless type
-        raise "Incorrect type (expected integer, found #{type}) for index '#{@index}' on #{@base.name}." unless type == :integer
+        @index = strategy_id
         @index_cache_key_prefix = cache_key(@index) # "/rc/<model>/<index>"
       end
 

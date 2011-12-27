@@ -1,12 +1,22 @@
 module RecordCache
   module Strategy
     class Base
+      
+      # Parse the options and return (an array of) instances of this strategy.
+      def self.parse(base, record_store, options)
+        raise NotImplementedError
+      end
 
       def initialize(base, strategy_id, record_store, options)
         @base = base
         @strategy_id = strategy_id
         @record_store = record_store
         @cache_key_prefix = "rc/#{options[:key] || @base.name}/"
+      end
+      
+      # retrieve the +strategy_id+ for this strategy, usually the column name (unique per model)
+      def id
+        @strategy_id
       end
 
       # Fetch all records and sort and filter locally
@@ -17,13 +27,13 @@ module RecordCache
         records
       end
 
-      # Handle create/update/destroy (use record.previous_changes to find the old values in case of an update)
-      def record_change(record, action)
+      # Can the cache retrieve the records based on this query?
+      def cacheable?(query)
         raise NotImplementedError
       end
 
-      # Can the cache retrieve the records based on this query?
-      def cacheable?(query)
+      # Handle create/update/destroy (use record.previous_changes to find the old values in case of an update)
+      def record_change(record, action)
         raise NotImplementedError
       end
 

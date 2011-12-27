@@ -8,8 +8,14 @@ module RecordCache
     class RequestCache < Base
       @@request_store = {}
 
+      # parse the options and return (an array of) instances of this strategy
+      def self.parse(base, record_store, options)
+        return nil unless options[:request_cache]
+        RequestCache.new(base, :request_cache, record_store, options)
+      end
+
       # call before each request: in application_controller.rb
-      # before_filter { |c| RecordCache::Strategy::RequestCache.clear }
+      # prepend_before_filter { |c| RecordCache::Strategy::RequestCache.clear }
       def self.clear
         @@request_store.clear
       end

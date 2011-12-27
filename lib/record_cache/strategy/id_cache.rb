@@ -1,7 +1,14 @@
 module RecordCache
   module Strategy
     class IdCache < Base
-  
+
+      # parse the options and return (an array of) instances of this strategy
+      def self.parse(base, record_store, options)
+        return nil if base.record_cache[:id] # in the end there can be only one +id+ strategy
+        return nil unless base.columns_hash['id'] # and there must be an +id+ column in the database
+        IdCache.new(base, :id, record_store, options)
+      end
+
       # Can the cache retrieve the records based on this query?
       def cacheable?(query)
         ids = query.where_ids(:id)
