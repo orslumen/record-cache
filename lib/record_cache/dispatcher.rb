@@ -12,31 +12,31 @@ module RecordCache
     # Roll your own cache strategies by extending from +RecordCache::Strategy::Base+,
     # and registering it here +RecordCache::Dispatcher.strategy_classes << MyStrategy+
     def self.strategy_classes
-      [RecordCache::Strategy::RequestCache, RecordCache::Strategy::IdCache, RecordCache::Strategy::IndexCache]
+      [RecordCache::Strategy::RequestCache, RecordCache::Strategy::UniqueIndexCache, RecordCache::Strategy::FullTableCache, RecordCache::Strategy::IndexCache]
     end
 
     def initialize(base)
       @base = base
-      @strategy_by_id = {}
+      @strategy_by_attribute = {}
     end
-    
+
     # Parse the options provided to the cache_records method and create the appropriate cache strategies.
     def parse(options)
       # find the record store, possibly based on the :store option
       store = record_store(options.delete(:store))
       # dispatch the parse call to all known strategies
       Dispatcher.strategy_classes.map{ |klass| klass.parse(@base, store, options) }.flatten.compact.each do |strategy|
-        raise "Multiple record cache definitions found for '#{strategy.id}' on #{@base.name}" if @strategy_by_id[strategy.id]
+        raise "Multiple record cache definitions found for '#{strategy.attribute}' on #{@base.name}" if @strategy_by_attribute[strategy.attribute]
         # and keep track of all strategies
-        @strategy_by_id[strategy.id] = strategy
+        @strategy_by_attribute[strategy.attribute] = strategy
       end
       # make sure the strategies are ordered again on next call to +ordered_strategies+
       @ordered_strategies = nil
     end
 
-    # Retrieve the caching strategy for the given strategy id
-    def [](strategy_id)
-      @strategy_by_id[strategy_id]
+    # Retrieve the caching strategy for the given attribute
+    def [](attribute)
+      @strategy_by_attribute[attribute]
     end
 
     # Can the cache retrieve the records based on this query?
@@ -62,7 +62,7 @@ module RecordCache
       # skip unless something has actually changed
       return if action == :update && record.previous_changes.empty?
       # dispatch the record change to all known strategies
-      @strategy_by_id.values.each { |strategy| strategy.record_change(record, action) }
+      @strategy_by_attribute.values.each { |strategy| strategy.record_change(record, action) }
     end
 
     # Explicitly invalidate one or more records
@@ -71,7 +71,7 @@ module RecordCache
     def invalidate(strategy, value = nil)
       (value = strategy; strategy = :id) unless strategy.is_a?(Symbol)
       # call the invalidate method of the chosen strategy
-      @strategy_by_id[strategy].invalidate(value) if @strategy_by_id[strategy]
+      @strategy_by_attribute[strategy].invalidate(value) if @strategy_by_attribute[strategy]
       # always clear the request cache if invalidate is explicitly called for this class
       request_cache.try(:invalidate, value)
     end
@@ -101,7 +101,7 @@ module RecordCache
       @ordered_strategies ||= begin
         last_index = Dispatcher.strategy_classes.size
         # sort the strategies baed on the +strategy_classes+ index
-        ordered = @strategy_by_id.values.sort{ |x,y| Dispatcher.strategy_classes.index(x.class) || last_index <=> Dispatcher.strategy_classes.index(y.class) || last_index }
+        ordered = @strategy_by_attribute.values.sort{ |x,y| Dispatcher.strategy_classes.index(x.class) || last_index <=> Dispatcher.strategy_classes.index(y.class) || last_index }
         # and remove the RequestCache from the list
         ordered.delete(request_cache) if request_cache
         ordered
@@ -111,7 +111,7 @@ module RecordCache
     # Retrieve the request cache strategy, or
     # +nil+ unless the +:request_cache => true+ option was provided.
     def request_cache
-      @strategy_by_id[:request_cache]
+      @strategy_by_attribute[:request_cache]
     end
 
   end

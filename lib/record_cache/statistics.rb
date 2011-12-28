@@ -32,13 +32,13 @@ module RecordCache
         stats.each{ |s| s.reset! }
       end
 
-      # Retrieve the statistics for the given base and strategy_id
-      # Returns a hash {<stategy_id> => <statistics} for a model if no strategy is provided
-      # Returns a hash of hashes { <model_name> => {<stategy_id> => <statistics} } if no parameter is provided
-      def find(base = nil, strategy_id = nil)
+      # Retrieve the statistics for the given base and attribute
+      # Returns a hash {<attribute> => <statistics} for a model if no strategy is provided
+      # Returns a hash of hashes { <model_name> => {<attribute> => <statistics} } if no parameter is provided
+      def find(base = nil, attribute = nil)
         stats = (@stats ||= {})
         stats = (stats[base.name] ||= {}) if base
-        stats = (stats[strategy_id] ||= Counter.new) if strategy_id
+        stats = (stats[attribute] ||= Counter.new) if attribute
         stats
       end
     end

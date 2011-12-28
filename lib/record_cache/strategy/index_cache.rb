@@ -4,7 +4,8 @@ module RecordCache
   
       # parse the options and return (an array of) instances of this strategy
       def self.parse(base, record_store, options)
-        return nil unless options[:index]
+        return nil unless 
+        raise "Index cache '#{options[:index].inspect}' on #{base.name} is redundant as index cache queries are handled by the full table cache." if options[:full_table]
         raise ":index => #{options[:index].inspect} option cannot be used unless 'id' is present on #{base.name}" unless base.columns_hash['id']
         [options[:index]].flatten.compact.map do |attribute|
           type = base.columns_hash[attribute.to_s].try(:type)
@@ -14,26 +15,25 @@ module RecordCache
         end
       end
 
-      def initialize(base, strategy_id, record_store, options)
+      def initialize(base, attribute, record_store, options)
         super
-        @index = strategy_id
-        @index_cache_key_prefix = cache_key(@index) # "/rc/<model>/<index>"
+        @index_cache_key_prefix = cache_key(attribute) # "/rc/<model>/<attribute>"
       end
 
       # Can the cache retrieve the records based on this query?
       def cacheable?(query)
         # allow limit of 1 for has_one
-        query.where_id(@index) && (query.limit.nil? || (query.limit == 1 && !query.sorted?))
+        query.where_value(@attribute) && (query.limit.nil? || (query.limit == 1 && !query.sorted?))
       end
 
       # Handle create/update/destroy (use record.previous_changes to find the old values in case of an update)
       def record_change(record, action)
         if action == :destroy
-          remove_from_index(record.send(@index), record.id)
+          remove_from_index(record.send(@attribute), record.id)
         elsif action == :create
-          add_to_index(record.send(@index), record.id)
+          add_to_index(record.send(@attribute), record.id)
         else
-          index_change = record.previous_changes[@index.to_s]
+          index_change = record.previous_changes[@attribute.to_s]
           return unless index_change
           remove_from_index(index_change[0], record.id)
           add_to_index(index_change[1], record.id)
@@ -49,9 +49,9 @@ module RecordCache
 
       # retrieve the record(s) based on the given query
       def fetch_records(query)
-        value = query.where_id(@index)
+        value = query.where_value(@attribute)
         # make sure CacheCase.filter! does not see this where clause anymore
-        query.wheres.delete(@index)
+        query.wheres.delete(@attribute)
         # retrieve the cache key for this index and value
         key = index_cache_key(value)
         # retrieve the current version of the ids list
@@ -89,7 +89,7 @@ module RecordCache
       def fetch_ids_from_db(versioned_key, value)
         RecordCache::Base.without_record_cache do
           # go straight to SQL result for optimal performance
-          sql = @base.select('id').where(@index => value).to_sql
+          sql = @base.select('id').where(@attribute => value).to_sql
           ids = []; @base.connection.execute(sql).each{ |row| ids << (row.is_a?(Hash) ? row['id'] : row.first).to_i }
           record_store.write(versioned_key, ids)
           ids

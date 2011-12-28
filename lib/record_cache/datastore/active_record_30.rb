@@ -275,8 +275,15 @@ module RecordCache
           if record_cache?
             # when this condition is met, the arel.update method will be called on the current scope, see ActiveRecord::Relation#update_all
             unless conditions || options.present? || @limit_value.present? != @order_values.present?
+              # get all attributes that contian a unique index for this model
+              unique_index_attributes = RecordCache::Strategy::UniqueIndexCache.attributes(self)
               # go straight to SQL result (without instantiating records) for optimal performance
-              connection.execute(select('id').to_sql).each{ |row| record_cache.invalidate(:id, (row.is_a?(Hash) ? row['id'] : row.first).to_i ) }
+              connection.execute(select(unique_index_attributes.map(&:to_s).join(',')).to_sql).each do |row|
+                # invalidate the unique index for all attributes
+                unique_index_attributes.each_with_index do |attribute, index|
+                  record_cache.invalidate(attribute, (row.is_a?(Hash) ? row[attribute.to_s] : row[index]) )
+                end
+              end
             end
           end
 

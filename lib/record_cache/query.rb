@@ -8,7 +8,7 @@ module RecordCache
       @wheres = equality || {}
       @sort_orders = []
       @limit = nil
-      @where_ids = {}
+      @where_values = {}
     end
 
     # Set equality of an attribute (usually found in where clause)
@@ -16,19 +16,23 @@ module RecordCache
       @wheres[attribute.to_sym] = values if attribute
     end
 
-    # Retrieve the ids (array of positive integers) for the given attribute from the where statements
+    # Retrieve the values for the given attribute from the where statements
     # Returns nil if no the attribute is not present
-    def where_ids(attribute)
-      return @where_ids[attribute] if @where_ids.key?(attribute)
-      @where_ids[attribute] ||= array_of_positive_integers(@wheres[attribute])
+    # @param attribute: the attribute name
+    # @param type: the type to be retrieved, :integer or :string (defaults to :integer)
+    def where_values(attribute, type = :integer)
+      return @where_values[attribute] if @where_values.key?(attribute)
+      @where_values[attribute] ||= array_of_values(@wheres[attribute], type)
     end
 
-    # Retrieve the single id (positive integer) for the given attribute from the where statements
-    # Returns nil if no the attribute is not present, or if it contains an array
-    def where_id(attribute)
-      ids = where_ids(attribute)
-      return nil unless ids && ids.size == 1
-      ids.first
+    # Retrieve the single value for the given attribute from the where statements
+    # Returns nil if the attribute is not present, or if it contains multiple values
+    # @param attribute: the attribute name
+    # @param type: the type to be retrieved, :integer or :string (defaults to :integer)
+    def where_value(attribute, type = :integer)
+      values = where_values(attribute, type)
+      return nil unless values && values.size == 1
+      values.first
     end
 
     # Add a sort order to the query
@@ -53,8 +57,8 @@ module RecordCache
       s = "SELECT "
       s << @wheres.map{|k,v| "#{k} = #{v.inspect}"}.join(" AND ")
       if @sort_orders.size > 0
-        order_by = @sort_orders.map{|attr,asc| "#{attr} #{asc ? 'ASC' : 'DESC'}"}.join(', ')
-        s << " ORDER_BY #{order_by}"
+        order_by_clause = @sort_orders.map{|attr,asc| "#{attr} #{asc ? 'ASC' : 'DESC'}"}.join(', ')
+        s << " ORDER_BY #{order_by_clause}"
       end
       s << " LIMIT #{@limit}" if @limit
       s
@@ -65,18 +69,22 @@ module RecordCache
     def generate_key
       key = @wheres.map{|k,v| "#{k}=#{v.inspect}"}.join("&")
       if @sort_orders
-        order_by = @sort_orders.map{|attr,asc| "#{attr}=#{asc ? 'A' : 'D'}"}.join('-')
-        key << ".#{order_by}"
+        order_by_clause = @sort_orders.map{|attr,asc| "#{attr}=#{asc ? 'A' : 'D'}"}.join('-')
+        key << ".#{order_by_clause}"
       end
       key << "L#{@limit}" if @limit
       key
     end
     
-    def array_of_positive_integers(values)
+    def array_of_values(values, type)
       return nil unless values
       values = [values] unless values.is_a?(Array)
-      values = values.map{|value| value.to_i} unless values.first.is_a?(Fixnum)
-      return nil unless values.all?{ |value| value > 0 } # all values must be positive integers
+      if type == :integer
+        values = values.map{|value| value.to_i} unless values.first.is_a?(Fixnum)
+        return nil unless values.all?{ |value| value > 0 } # all values must be positive integers
+      elsif type == :string
+        values = values.map{|value| value.to_s} unless values.first.is_a?(String)
+      end
       values
     end
 

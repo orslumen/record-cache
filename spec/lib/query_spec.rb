@@ -22,69 +22,69 @@ describe RecordCache::Query do
       @query.wheres.should == {:name => "My name", :id => [1, 2, 3], :height => 1.75}
     end
 
-    context "where_ids" do
+    context "where_values" do
       it "should return nil if the attribute is not defined" do
         @query.where(:idx, 15)
-        @query.where_ids(:id).should == nil
+        @query.where_values(:id).should == nil
       end
 
       it "should return nil if one the value is nil" do
         @query.where(:id, nil)
-        @query.where_ids(:id).should == nil
+        @query.where_values(:id).should == nil
       end
 
       it "should return nil if one of the values is < 1" do
         @query.where(:id, [2, 0, 8])
-        @query.where_ids(:id).should == nil
+        @query.where_values(:id).should == nil
       end
 
       it "should return nil if one of the values is nil" do
         @query.where(:id, ["1", nil, "3"])
-        @query.where_ids(:id).should == nil
+        @query.where_values(:id).should == nil
       end
 
       it "should retrieve an array of integers when a single integer is provided" do
         @query.where(:id, 15)
-        @query.where_ids(:id).should == [15]
+        @query.where_values(:id).should == [15]
       end
   
       it "should retrieve an array of integers when a multiple integers are provided" do
         @query.where(:id, [2, 4, 8])
-        @query.where_ids(:id).should == [2, 4, 8]
+        @query.where_values(:id).should == [2, 4, 8]
       end
       
       it "should retrieve an array of integers when a single string is provided" do
         @query.where(:id, "15")
-        @query.where_ids(:id).should == [15]
+        @query.where_values(:id).should == [15]
       end
   
       it "should retrieve an array of integers when a multiple strings are provided" do
         @query.where(:id, ["2", "4", "8"])
-        @query.where_ids(:id).should == [2, 4, 8]
+        @query.where_values(:id).should == [2, 4, 8]
       end
       
-      it "should cache the array of integers" do
+      it "should cache the array of values" do
         @query.where(:id, ["2", "4", "8"])
-        ids1 = @query.where_ids(:id)
-        ids2 = @query.where_ids(:id)
+        ids1 = @query.where_values(:id)
+        ids2 = @query.where_values(:id)
         ids1.object_id.should == ids2.object_id
       end
     end
 
-    context "where_id" do
+    context "where_value" do
       it "should return nil when multiple integers are provided" do
         @query.where(:id, [2, 4, 8])
-        @query.where_id(:id).should == nil
+        @query.where_value(:id).should == nil
       end
       
       it "should return the id when a single integer is provided" do
         @query.where(:id, 4)
-        @query.where_id(:id).should == 4
+        @query.where_value(:id).should == 4
       end
 
       it "should return the id when a single string is provided" do
         @query.where(:id, ["4"])
-        @query.where_id(:id).should == 4
+        @query.where_value(:id).should == 4
       end
     end
   end

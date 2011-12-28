@@ -7,16 +7,17 @@ module RecordCache
         raise NotImplementedError
       end
 
-      def initialize(base, strategy_id, record_store, options)
+      def initialize(base, attribute, record_store, options)
         @base = base
-        @strategy_id = strategy_id
+        @attribute = attribute
         @record_store = record_store
         @cache_key_prefix = "rc/#{options[:key] || @base.name}/"
       end
       
-      # retrieve the +strategy_id+ for this strategy, usually the column name (unique per model)
-      def id
-        @strategy_id
+      # Retrieve the +attribute+ for this strategy (unique per model).
+      # May be a non-existing attribute in case a cache is not based on a single attribute.
+      def attribute
+        @attribute
       end
 
       # Fetch all records and sort and filter locally
@@ -24,6 +25,7 @@ module RecordCache
         records = fetch_records(query)
         Util.filter!(records, query.wheres) if query.wheres.size > 0
         Util.sort!(records, query.sort_orders) if query.sorted?
+        records = records[0..query.limit-1] if query.limit
         records
       end
 
@@ -62,14 +64,14 @@ module RecordCache
       
       # find the statistics for this cache strategy
       def statistics
-        @statistics ||= RecordCache::Statistics.find(@base, @strategy_id)
+        @statistics ||= RecordCache::Statistics.find(@base, @attribute)
       end
 
       # retrieve the cache key for the given id, e.g. rc/person/14
       def cache_key(id)
         "#{@cache_key_prefix}#{id}"
       end
-  
+
       # retrieve the versioned record key, e.g. rc/person/14v1
       def versioned_key(cache_key, version)
         "#{cache_key}v#{version.to_s}"

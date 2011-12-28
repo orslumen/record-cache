@@ -6,7 +6,7 @@ describe RecordCache::Dispatcher do
   end
   
   it "should return the (ordered) strategy classes" do
-    RecordCache::Dispatcher.strategy_classes.should == [RecordCache::Strategy::RequestCache, RecordCache::Strategy::IdCache, RecordCache::Strategy::IndexCache]
+    RecordCache::Dispatcher.strategy_classes.should == [RecordCache::Strategy::RequestCache, RecordCache::Strategy::UniqueIndexCache, RecordCache::Strategy::FullTableCache, RecordCache::Strategy::IndexCache]
   end
   
   context "parse" do
@@ -16,7 +16,7 @@ describe RecordCache::Dispatcher do
   end
   
   it "should return the Cache for the requested strategy" do
-    @apple_dispatcher[:id].class.should == RecordCache::Strategy::IdCache
+    @apple_dispatcher[:id].class.should == RecordCache::Strategy::UniqueIndexCache
     @apple_dispatcher[:store_id].class.should == RecordCache::Strategy::IndexCache
   end
 

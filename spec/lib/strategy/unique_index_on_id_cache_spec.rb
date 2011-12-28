@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe RecordCache::Strategy::IdCache do
+describe RecordCache::Strategy::UniqueIndexCache do
 
   it "should retrieve an Apple from the cache" do
     lambda{ Apple.find(1) }.should miss_cache(Apple).on(:id).times(1)
@@ -20,17 +20,17 @@ describe RecordCache::Strategy::IdCache do
     end
 
     it "should write full hits to the debug log" do
-      mock(RecordCache::Base.logger).debug(/IdCache hit for ids 1|^(?!IdCache)/).times(any_times)
+      mock(RecordCache::Base.logger).debug(/UniqueIndexCache on 'id' hit for ids 1|^(?!UniqueIndexCache)/).times(any_times)
       Apple.find(1)
     end
 
     it "should write full miss to the debug log" do
-      mock(RecordCache::Base.logger).debug(/IdCache miss for ids 2|^(?!IdCache)/).times(any_times)
+      mock(RecordCache::Base.logger).debug(/UniqueIndexCache on 'id' miss for ids 2|^(?!UniqueIndexCache)/).times(any_times)
       Apple.find(2)
     end
     
     it "should write partial hits to the debug log" do
-      mock(RecordCache::Base.logger).debug(/IdCache partial hit for ids \[1, 2\]: missing \[2\]|^(?!IdCache)/).times(any_times)
+      mock(RecordCache::Base.logger).debug(/UniqueIndexCache on 'id' partial hit for ids \[1, 2\]: missing \[2\]|^(?!UniqueIndexCache)/).times(any_times)
       Apple.where(:id => [1,2]).all
     end
   end
@@ -169,5 +169,5 @@ describe RecordCache::Strategy::IdCache do
       @homeless_apple.store_id.should == nil
     end
   end
-
+  
 end
