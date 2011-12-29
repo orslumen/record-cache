@@ -12,13 +12,24 @@ describe RecordCache::Strategy::Util do
     subject.deserialize({:a=>{"name"=>"Blue Banana 1", "id"=>1, "store_id"=>2, "person_id"=>4}, :c=>"Banana"}).should == Banana.find(1)
   end
 
+  it "should call the after_finalize and after_find callbacks when deserializing a record" do
+    record = subject.deserialize({:a=>{"name"=>"Blue Banana 1", "id"=>1, "store_id"=>2, "person_id"=>4}, :c=>"Banana"})
+    record.logs.sort.should == ["after_find", "after_initialize"]
+  end
+
+  it "should not be a new record nor have changed attributes after deserializing a record" do
+    record = subject.deserialize({:a=>{"id"=>1}, :c=>"Banana"})
+    record.new_record?.should be_false
+    record.changed_attributes.should be_empty
+  end
+
   context "filter" do
     it "should apply filter" do
       apples = Apple.where(:id => [1,2]).all
       subject.filter!(apples, :name => "Adams Apple 1")
       apples.should == [Apple.find_by_name("Adams Apple 1")]
     end
-    
+
     it "should return empty array when filter does not match any record" do
       apples = Apple.where(:id => [1,2]).all
       subject.filter!(apples, :name => "Adams Apple Pie")
@@ -56,7 +67,7 @@ describe RecordCache::Strategy::Util do
       subject.filter!(apples, :store_id => [2, 4])
       apples.map(&:id).sort.should == [8,9]
     end
-    
+
     it "should filter on multiple fields" do
       # make sure two apples exist with the same name
       apple = Apple.find(8)
@@ -200,14 +211,14 @@ describe RecordCache::Strategy::Util do
       people.map(&:height).should == [1.91, 1.75, 1.75, 1.69]
       people.map(&:id).should == [5, 3, 2, 4]
     end
-    
+
     it "should use mysql style collation" do
       ids = []
       ids << Person.create!(:name => "ċedriĉ 3").id # latin other special
       ids << Person.create!(:name => "a cedric").id # first in ascending order
       ids << Person.create!(:name => "čedriĉ 4").id # latin another special
       ids << Person.create!(:name => "ćedriĉ Last").id # latin special lowercase
-      ids << Person.create!(:name => "sedric 1").id # second to last latin in ascending order 
+      ids << Person.create!(:name => "sedric 1").id # second to last latin in ascending order
       ids << Person.create!(:name => "Cedric 2").id # ascii uppercase
       ids << Person.create!(:name => "čedriĉ คฉ Almost last cedric").id # latin special, with non-latin
       ids << Person.create!(:name => "Sedric 2").id # last latin in ascending order
