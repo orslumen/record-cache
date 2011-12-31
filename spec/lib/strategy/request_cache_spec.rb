@@ -20,12 +20,12 @@ describe RecordCache::Strategy::RequestCache do
     end
 
     it "should write hit to the debug log" do
-      mock(RecordCache::Base.logger).debug(/RequestCache hit for id=1\.L1|^(?!RequestCache)/).times(any_times)
+      mock(RecordCache::Base.logger).debug(/RequestCache hit for 1\?id=1|^(?!RequestCache)/).times(any_times)
       Store.find(1)
     end
 
     it "should write miss to the debug log" do
-      mock(RecordCache::Base.logger).debug(/^RequestCache miss for id=2.L1|^(?!RequestCache)/).times(any_times)
+      mock(RecordCache::Base.logger).debug(/^RequestCache miss for 1\?id=2|^(?!RequestCache)/).times(any_times)
       Store.find(2)
     end
   end
@@ -36,7 +36,7 @@ describe RecordCache::Strategy::RequestCache do
       @store1 = Store.find(1)
       @store2 = Store.find(2)
     end
-    
+
     it "should remove all records from the cache for a specific model when one record is destroyed" do
       lambda{ Store.find(1) }.should hit_cache(Store).on(:request_cache).times(1)
       lambda{ Store.find(2) }.should hit_cache(Store).on(:request_cache).times(1)
@@ -69,7 +69,7 @@ describe RecordCache::Strategy::RequestCache do
       @store1 = Store.find(1)
       @store2 = Store.find(2)
     end
-    
+
     it "should remove all records from the cache when clear is explicitly called" do
       lambda{ Store.find(1) }.should hit_cache(Store).on(:request_cache).times(1)
       RecordCache::Strategy::RequestCache.clear
