@@ -16,12 +16,8 @@ module RecordCache
 
         # deserialize a cached record
         def deserialize(serialized)
-          record = serialized[CLASS_KEY].constantize.new
-          attributes = serialized[ATTRIBUTES_KEY]
-          record.instance_variable_set(:@attributes, Hash[attributes])
-          record.instance_variable_set(:@new_record, false)
-          record.instance_variable_set(:@changed_attributes, {})
-          record.instance_variable_set(:@previously_changed, {})
+          record = serialized[CLASS_KEY].constantize.allocate
+          record.init_with('attributes' => serialized[ATTRIBUTES_KEY])
           record
         end
 
@@ -81,19 +77,19 @@ module RecordCache
           # Proc.new{ |x,y| { ([(COLLATER.collate(x.name) || NIL_COMES_FIRST), (y.updated_at || NIL_COMES_FIRST)] <=> [COLLATER.collate(y.name), x.updated_at]) || 1 }
           eval("Proc.new{ |x,y| (#{sort[0]} <=> #{sort[1]}) || 1 }")
         end
-    
+
         # If +x.nil?+ this class will return -1 for +x <=> y+
         NIL_COMES_FIRST = ((class NilComesFirst; def <=>(y); -1; end; end); NilComesFirst.new)
-    
+
         # StringCollator uses the Rails transliterate method for collation
         module Collator
           @collated = []
-    
+
           def self.clear
             @collated.each { |string| string.send(:remove_instance_variable, :@rc_collated) }
             @collated.clear
           end
-    
+
           def self.collate(string)
             collated = string.instance_variable_get(:@rc_collated)
             return collated if collated
@@ -108,7 +104,7 @@ module RecordCache
           end
         end
       end
-      
+
     end
   end
 end
