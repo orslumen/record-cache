@@ -4,7 +4,7 @@ describe RecordCache::Query do
   before(:each) do
     @query = RecordCache::Query.new
   end
-  
+
   context "wheres" do
     it "should be an empty hash by default" do
       @query.wheres.should == {}
@@ -47,22 +47,22 @@ describe RecordCache::Query do
         @query.where(:id, 15)
         @query.where_values(:id).should == [15]
       end
-  
+
       it "should retrieve an array of integers when a multiple integers are provided" do
         @query.where(:id, [2, 4, 8])
         @query.where_values(:id).should == [2, 4, 8]
       end
-      
+
       it "should retrieve an array of integers when a single string is provided" do
         @query.where(:id, "15")
         @query.where_values(:id).should == [15]
       end
-  
+
       it "should retrieve an array of integers when a multiple strings are provided" do
         @query.where(:id, ["2", "4", "8"])
         @query.where_values(:id).should == [2, 4, 8]
       end
-      
+
       it "should cache the array of values" do
         @query.where(:id, ["2", "4", "8"])
         ids1 = @query.where_values(:id)
@@ -76,7 +76,7 @@ describe RecordCache::Query do
         @query.where(:id, [2, 4, 8])
         @query.where_value(:id).should == nil
       end
-      
+
       it "should return the id when a single integer is provided" do
         @query.where(:id, 4)
         @query.where_value(:id).should == 4
@@ -111,12 +111,12 @@ describe RecordCache::Query do
       @query.sorted?.should == true
     end
   end
-  
+
   context "limit" do
     it "should be +nil+ by default" do
       @query.limit.should == nil
     end
-    
+
     it "should keep track of limit" do
       @query.limit = 4
       @query.limit.should == 4
@@ -127,22 +127,22 @@ describe RecordCache::Query do
       @query.limit.should == 4
     end
   end
-  
+
   context "utility" do
     before(:each) do
-      @query.where(:name, "My name")
+      @query.where(:name, "My name & co")
       @query.where(:id, [1, 2, 3])
       @query.order_by("name", true)
       @query.limit = "4"
     end
-    
+
     it "should generate a unique key for (request) caching purposes" do
-      @query.cache_key.should == 'name="My name"&id=[1, 2, 3].name=AL4'
+      @query.cache_key.should == '4+name?name="My name & co"&id=[1, 2, 3]'
     end
 
     it "should generate a pretty formatted query" do
-      @query.to_s.should == 'SELECT name = "My name" AND id = [1, 2, 3] ORDER_BY name ASC LIMIT 4'
+      @query.to_s.should == 'SELECT name = "My name & co" AND id = [1, 2, 3] ORDER_BY name ASC LIMIT 4'
     end
   end
-  
+
 end

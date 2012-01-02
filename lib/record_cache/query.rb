@@ -56,7 +56,7 @@ module RecordCache
     def to_s
       s = "SELECT "
       s << @wheres.map{|k,v| "#{k} = #{v.inspect}"}.join(" AND ")
-      if @sort_orders.size > 0
+      if sorted?
         order_by_clause = @sort_orders.map{|attr,asc| "#{attr} #{asc ? 'ASC' : 'DESC'}"}.join(', ')
         s << " ORDER_BY #{order_by_clause}"
       end
@@ -67,15 +67,16 @@ module RecordCache
     private
 
     def generate_key
-      key = @wheres.map{|k,v| "#{k}=#{v.inspect}"}.join("&")
-      if @sort_orders
-        order_by_clause = @sort_orders.map{|attr,asc| "#{attr}=#{asc ? 'A' : 'D'}"}.join('-')
-        key << ".#{order_by_clause}"
+      key = ""
+      key << @limit.to_s if @limit
+      key << @sort_orders.map{|attr,asc| "#{asc ? '+' : '-'}#{attr}"}.join if sorted?
+      if @wheres.any?
+        key << "?"
+        key << @wheres.map{|k,v| "#{k}=#{v.inspect}"}.join("&")
       end
-      key << "L#{@limit}" if @limit
       key
     end
-    
+
     def array_of_values(values, type)
       return nil unless values
       values = [values] unless values.is_a?(Array)
