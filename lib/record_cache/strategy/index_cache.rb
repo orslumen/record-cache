@@ -4,7 +4,7 @@ module RecordCache
   
       # parse the options and return (an array of) instances of this strategy
       def self.parse(base, record_store, options)
-        return nil unless 
+        return nil unless options[:index]
         raise "Index cache '#{options[:index].inspect}' on #{base.name} is redundant as index cache queries are handled by the full table cache." if options[:full_table]
         raise ":index => #{options[:index].inspect} option cannot be used unless 'id' is present on #{base.name}" unless base.columns_hash['id']
         [options[:index]].flatten.compact.map do |attribute|

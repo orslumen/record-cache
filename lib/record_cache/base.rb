@@ -29,7 +29,7 @@ module RecordCache
       # The ActiveSupport::Cache::Store instance that contains the current record(group) versions.
       # Note that it must point to a single Store shared by all webservers (defaults to Rails.cache)
       def version_store
-        @version_store = Rails.cache unless @version_store
+        self.version_store = Rails.cache unless @version_store
         @version_store
       end
 
@@ -55,6 +55,27 @@ module RecordCache
       # Enable record cache
       def enable
         @status = RecordCache::ENABLED
+      end
+
+      # Executes the block with caching enabled.
+      # Useful in testing scenarios.
+      #
+      #   RecordCache::Base.enabled do
+      #     @foo = Article.find(1)
+      #     @foo.update_attributes(:time_spent => 45)
+      #     @foo = Article.find(1)
+      #     @foo.time_spent.should be_nil
+      #     TimeSpent.last.amount.should == 45
+      #   end
+      #
+      def enabled(&block)
+        previous_status = @status
+        begin
+          @status = RecordCache::ENABLED
+          yield
+        ensure
+          @status = previous_status
+        end
       end
 
       # Retrieve the current status
