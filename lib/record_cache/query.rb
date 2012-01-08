@@ -48,11 +48,12 @@ module RecordCache
       @limit = limit.to_i
     end
 
-    # retrieve a unique key for this Query (used in RequestCache)
+    # DEPRECATED: retrieve a unique key for this Query (used in RequestCache)
     def cache_key
       @cache_key ||= generate_key
     end
 
+    # DEPRECATED
     def to_s
       s = "SELECT "
       s << @wheres.map{|k,v| "#{k} = #{v.inspect}"}.join(" AND ")

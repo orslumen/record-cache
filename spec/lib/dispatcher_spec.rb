@@ -6,7 +6,7 @@ describe RecordCache::Dispatcher do
   end
 
   it "should return the (ordered) strategy classes" do
-    RecordCache::Dispatcher.strategy_classes.should == [RecordCache::Strategy::RequestCache, RecordCache::Strategy::UniqueIndexCache, RecordCache::Strategy::FullTableCache, RecordCache::Strategy::IndexCache]
+    RecordCache::Dispatcher.strategy_classes.should == [RecordCache::Strategy::UniqueIndexCache, RecordCache::Strategy::FullTableCache, RecordCache::Strategy::IndexCache]
   end
 
   it "should be able to register a new strategy" do
@@ -36,20 +36,11 @@ describe RecordCache::Dispatcher do
     @apple_dispatcher.cacheable?(query).should == true
   end
 
-  context "fetch" do
-    it "should delegate fetch to the Request Cache if present" do
-      query = RecordCache::Query.new
-      mock(@apple_dispatcher[:request_cache]).fetch(query)
-      @apple_dispatcher.fetch(query)
-    end
-
-    it "should delegate fetch to the first cacheable strategy if Request Cache is not present" do
-      query = RecordCache::Query.new
-      banana_dispatcher = Banana.record_cache
-      banana_dispatcher[:request_cache].should == nil
-      mock(banana_dispatcher).first_cacheable_strategy(query) { mock(Object.new).fetch(query) }
-      banana_dispatcher.fetch(query)
-    end
+  it "should delegate fetch to the first cacheable strategy" do
+    query = RecordCache::Query.new
+    banana_dispatcher = Banana.record_cache
+    mock(banana_dispatcher).first_cacheable_strategy(query) { mock(Object.new).fetch(query) }
+    banana_dispatcher.fetch(query)
   end
   
   context "record_change" do
@@ -63,7 +54,7 @@ describe RecordCache::Dispatcher do
   
     it "should not dispatch record_change for updates without changes" do
       apple = Apple.first
-      [:request_cache, :id, :store_id, :person_id].each do |strategy|
+      [:id, :store_id, :person_id].each do |strategy|
         mock(@apple_dispatcher[strategy]).record_change(anything, anything).times(0)
       end
       @apple_dispatcher.record_change(apple, :update)
@@ -81,18 +72,6 @@ describe RecordCache::Dispatcher do
       mock(@apple_dispatcher[:store_id]).invalidate(31)
       @apple_dispatcher.invalidate(:id, 15)
       @apple_dispatcher.invalidate(:store_id, 31)
-    end
-
-    it "should invalidate the request cache" do
-      store_dispatcher = Store.record_cache
-      mock(store_dispatcher[:request_cache]).invalidate(15)
-      store_dispatcher.invalidate(:id, 15)
-    end
-
-    it "should even invalidate the request cache if the given strategy is not known" do
-      store_dispatcher = Store.record_cache
-      mock(store_dispatcher[:request_cache]).invalidate(31)
-      store_dispatcher.invalidate(:unknown_id, 31)
     end
   end
 end

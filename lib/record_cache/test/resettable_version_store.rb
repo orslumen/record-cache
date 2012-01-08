@@ -25,14 +25,13 @@ module RecordCache
           updated_version_keys << key
           increment_without_reset(key)
         end
-        
+
         def renew_with_reset(key)
           updated_version_keys << key
           renew_without_reset(key)
         end
 
         def reset!
-          RecordCache::Strategy::RequestCache.clear
           updated_version_keys.each { |key| delete(key) }
           updated_version_keys.clear
         end

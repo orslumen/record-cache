@@ -12,7 +12,7 @@ module RecordCache
     # Roll your own cache strategies by extending from +RecordCache::Strategy::Base+,
     # and registering it here +RecordCache::Dispatcher.strategy_classes << MyStrategy+
     def self.strategy_classes
-      @strategy_classes ||= [RecordCache::Strategy::RequestCache, RecordCache::Strategy::UniqueIndexCache, RecordCache::Strategy::FullTableCache, RecordCache::Strategy::IndexCache]
+      @strategy_classes ||= [RecordCache::Strategy::UniqueIndexCache, RecordCache::Strategy::FullTableCache, RecordCache::Strategy::IndexCache]
     end
 
     def initialize(base)
@@ -46,13 +46,8 @@ module RecordCache
 
     # retrieve the record(s) based on the given query (check with cacheable?(query) first)
     def fetch(query)
-      if request_cache
-        # cache the query in the request
-        request_cache.fetch(query) { fetch_from_first_cacheable_strategy(query) }
-      else
-        # fetch the results using the first strategy that accepts this query
-        fetch_from_first_cacheable_strategy(query)
-      end
+      # fetch the results using the first strategy that accepts this query
+      fetch_from_first_cacheable_strategy(query)
     end
 
     # Update the version store and the record store (used by callbacks)
@@ -72,8 +67,6 @@ module RecordCache
       (value = strategy; strategy = :id) unless strategy.is_a?(Symbol)
       # call the invalidate method of the chosen strategy
       @strategy_by_attribute[strategy].invalidate(value) if @strategy_by_attribute[strategy]
-      # always clear the request cache if invalidate is explicitly called for this class
-      request_cache.try(:invalidate, value)
     end
 
     private
@@ -96,22 +89,14 @@ module RecordCache
       ordered_strategies.detect { |strategy| strategy.cacheable?(query) }
     end
 
-    # Retrieve all strategies except :request_cache ordered by the fastest strategy first (currently :id, :unique, :index)
+    # Retrieve all strategies ordered by the fastest strategy first (currently :id, :unique, :index)
     def ordered_strategies
       @ordered_strategies ||= begin
         last_index = Dispatcher.strategy_classes.size
         # sort the strategies baed on the +strategy_classes+ index
         ordered = @strategy_by_attribute.values.sort{ |x,y| Dispatcher.strategy_classes.index(x.class) || last_index <=> Dispatcher.strategy_classes.index(y.class) || last_index }
-        # and remove the RequestCache from the list
-        ordered.delete(request_cache) if request_cache
         ordered
       end
-    end
-
-    # Retrieve the request cache strategy, or
-    # +nil+ unless the +:request_cache => true+ option was provided.
-    def request_cache
-      @strategy_by_attribute[:request_cache]
     end
 
   end
