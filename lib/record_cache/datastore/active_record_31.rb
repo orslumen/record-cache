@@ -10,7 +10,6 @@ module RecordCache
               alias_method_chain :find_by_sql, :record_cache
             end
           end
-          include InstanceMethods
         end
       end
 
@@ -22,27 +21,40 @@ module RecordCache
           after_commit :record_cache_update,  :on => :update
           after_commit :record_cache_destroy, :on => :destroy
         end
-  
+
         # Retrieve the records, possibly from cache
-        def find_by_sql_with_record_cache(*args)
-           # no caching please
-          return find_by_sql_without_record_cache(*args) unless record_cache?
-          
+        def find_by_sql_with_record_cache(sql, binds = [])
+          # shortcut, no caching please
+          return find_by_sql_without_record_cache(sql, binds) unless record_cache?
+
           # check the piggy-back'd ActiveRelation record to see if the query can be retrieved from cache
-          arel = args[0]
-          arel = arel.instance_variable_get(:@arel) if arel.is_a?(String)
+          arel = sql.is_a?(String) ? sql.instance_variable_get(:@arel) : sql
 
-          query = arel ? RecordCache::Arel::QueryVisitor.new(args[1]).accept(arel.ast) : nil
-          cacheable = query && record_cache.cacheable?(query)
-          # log only in debug mode!
-          RecordCache::Base.logger.debug("#{cacheable ? 'Fetch from cache' : 'Not cacheable'} (#{query}): SQL = #{arel.to_sql}") if RecordCache::Base.logger.debug?
-          # retrieve the records from cache if the query is cacheable otherwise go straight to the DB
-          cacheable ? record_cache.fetch(query) : find_by_sql_without_record_cache(*args)
+          sanitized_sql = sanitize_sql(sql)
+
+          records = if connection.instance_variable_get(:@query_cache_enabled)
+            query_cache = connection.instance_variable_get(:@query_cache)
+            query_cache["rc/#{sanitized_sql}"][binds] ||= try_record_cache(arel, sanitized_sql, binds)
+          else
+            try_record_cache(arel, sanitized_sql, binds)
+          end
+          records.collect! { |record| instantiate(record) } if records[0].is_a?(Hash)
+          records
         end
+
+        def try_record_cache(arel, sql, binds)
+          query = arel ? RecordCache::Arel::QueryVisitor.new(binds).accept(arel.ast) : nil
+          cacheable = query && record_cache.cacheable?(query)
+          if cacheable
+            record_cache.fetch(query)
+          else
+            sql = connection.visitor.accept(sql.ast) if sql.respond_to?(:ast)
+            connection.send(:select, sql, "#{name} Load")
+          end
+        end
+
       end
 
-      module InstanceMethods
-      end
     end
   end
 
@@ -63,7 +75,7 @@ module RecordCache
 
       module ClassMethods
       end
-  
+
       module InstanceMethods
         def to_sql_with_record_cache
           sql = to_sql_without_record_cache
@@ -72,7 +84,7 @@ module RecordCache
         end
       end
     end
-    
+
     # Visitor for the ActiveRelation to extract a simple cache query
     # Only accepts single select queries with equality where statements
     # Rejects queries with grouping / having / offset / etc.
@@ -101,11 +113,11 @@ module RecordCache
       end
 
       alias :visit_Arel_Nodes_Ordering :not_cacheable
-      
+
       alias :visit_Arel_Nodes_TableAlias :not_cacheable
 
       alias :visit_Arel_Nodes_Lock :not_cacheable
-      
+
       alias :visit_Arel_Nodes_Sum   :not_cacheable
       alias :visit_Arel_Nodes_Max   :not_cacheable
       alias :visit_Arel_Nodes_Avg   :not_cacheable
@@ -169,7 +181,7 @@ module RecordCache
           visit o.cores
         end
       end
-      
+
       def handle_order_by(order)
         order.to_s.split(COMMA).each do |o|
           # simple sort order (+peope.id+ can be replaced by +id+, as joins are not allowed anyways)
@@ -263,7 +275,7 @@ module RecordCache
 end
 
 module RecordCache
-  
+
   # Patch ActiveRecord::Relation to make sure update_all will invalidate all referenced records
   module ActiveRecord
     module UpdateAll
@@ -276,7 +288,7 @@ module RecordCache
           end
         end
       end
-  
+
       module ClassMethods
       end
 
