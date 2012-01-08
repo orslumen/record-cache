@@ -285,14 +285,17 @@ Now it is possible to re-use MySQL style sorting (with collation) in your own ap
 #### Version 1.3
 
 Fixed Bugs:
+
 1. "\u0000" is also used by Arel as a parameter query binding marker.
 1. https://github.com/orslumen/record-cache/issues/2: bypassing record_cache when selecting rows with lock
 
 Added:
+
 1. Release Notes ;)
-1. https://github.com/orslumen/record-cache/pull/3: Ruby 1.9 fixes, has_one support, Remove Freeze for Dalli encoding (Bryan Mundie)
+1. Ruby 1.9 fixes, has_one support, Remove Freeze for Dalli encoding (Bryan Mundie https://github.com/orslumen/record-cache/pull/3)
 1. :unique_index option
 1. :cache_all option
+1. Option :request_cache has been removed. It now defaults to caching everything during the scope of a request re-using ActiveRecord::QueryCache.
 
 And updated the gemspec file.
 
