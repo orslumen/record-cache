@@ -31,6 +31,7 @@ module RecordCache
           arel = sql.is_a?(String) ? sql.instance_variable_get(:@arel) : sql
 
           sanitized_sql = sanitize_sql(sql)
+          sanitized_sql = connection.visitor.accept(sanitized_sql.ast) if sanitized_sql.respond_to?(:ast)
 
           records = if connection.instance_variable_get(:@query_cache_enabled)
             query_cache = connection.instance_variable_get(:@query_cache)
@@ -45,8 +46,7 @@ module RecordCache
         def try_record_cache(arel, sql, binds)
           query = arel ? RecordCache::Arel::QueryVisitor.new(binds).accept(arel.ast) : nil
           record_cache.fetch(query) do
-            sql = connection.visitor.accept(sql.ast) if sql.respond_to?(:ast)
-            connection.send(:select, sql, "#{name} Load")
+            connection.send(:select, sql, "#{name} Load", binds)
           end
         end
 
