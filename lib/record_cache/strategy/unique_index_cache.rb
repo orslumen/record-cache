@@ -48,11 +48,6 @@ module RecordCache
         end
       end
 
-      # Handle invalidation call
-      def invalidate(id)
-        version_store.delete(cache_key(@type == :integer ? id.to_i : id.to_s))
-      end
-  
       protected
   
       # retrieve the record(s) with the given id(s) as an array

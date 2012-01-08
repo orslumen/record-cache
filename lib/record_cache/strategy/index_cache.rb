@@ -17,7 +17,7 @@ module RecordCache
 
       def initialize(base, attribute, record_store, options)
         super
-        @index_cache_key_prefix = cache_key(attribute) # "/rc/<model>/<attribute>"
+        @cache_key_prefix << "#{attribute}="
       end
 
       # Can the cache retrieve the records based on this query?
@@ -40,11 +40,6 @@ module RecordCache
         end
       end
 
-      # Explicitly invalidate the record cache for the given value
-      def invalidate(value)
-        version_store.increment(index_cache_key(value))
-      end
-
       protected
 
       # retrieve the record(s) based on the given query
@@ -53,7 +48,7 @@ module RecordCache
         # make sure CacheCase.filter! does not see this where clause anymore
         query.wheres.delete(@attribute)
         # retrieve the cache key for this index and value
-        key = index_cache_key(value)
+        key = cache_key(value)
         # retrieve the current version of the ids list
         current_version = version_store.current(key)
         # create the versioned key, renew the version in case it was missing in the version store
@@ -70,15 +65,10 @@ module RecordCache
         records = records[0, query.limit] unless query.limit.nil? || records.nil?
         records
       end
-  
+
       private
   
       # ---------------------------- Querying ------------------------------------
-  
-      # key to retrieve the ids for a given value
-      def index_cache_key(value)
-        "#{@index_cache_key_prefix}=#{value}"
-      end
   
       # Retrieve the ids from the local cache
       def fetch_ids_from_cache(versioned_key)
@@ -111,7 +101,7 @@ module RecordCache
       # increment the version store and update the local store
       def increment_version(value, &block)
         # retrieve local version and increment version store
-        key = index_cache_key(value)
+        key = cache_key(value)
         version = version_store.increment(key)
         # try to update the ids list based on the last version
         ids = fetch_ids_from_cache(versioned_key(key, version - 1))
