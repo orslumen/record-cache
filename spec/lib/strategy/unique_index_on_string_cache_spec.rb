@@ -20,17 +20,17 @@ describe RecordCache::Strategy::UniqueIndexCache do
     end
 
     it "should write full hits to the debug log" do
-      mock(RecordCache::Base.logger).debug(/UniqueIndexCache on 'name' hit for ids "Fry"|^(?!UniqueIndexCache)/).times(any_times)
+      mock(RecordCache::Base.logger).debug(/UniqueIndexCache on 'Person.name' hit for id "Fry"|^(?!UniqueIndexCache)/).times(any_times)
       Person.find_by_name("Fry")
     end
 
     it "should write full miss to the debug log" do
-      mock(RecordCache::Base.logger).debug(/UniqueIndexCache on 'name' miss for ids "Chase"|^(?!UniqueIndexCache)/).times(any_times)
+      mock(RecordCache::Base.logger).debug(/UniqueIndexCache on 'Person.name' miss for id "Chase"|^(?!UniqueIndexCache)/).times(any_times)
       Person.find_by_name("Chase")
     end
 
     it "should write partial hits to the debug log" do
-      mock(RecordCache::Base.logger).debug(/UniqueIndexCache on 'name' partial hit for ids \["Fry", "Chase"\]: missing \["Chase"\]|^(?!UniqueIndexCache)/).times(any_times)
+      mock(RecordCache::Base.logger).debug(/UniqueIndexCache on 'Person.name' partial hit for ids \["Fry", "Chase"\]: missing \["Chase"\]|^(?!UniqueIndexCache)/).times(any_times)
       Person.where(:name => ["Fry", "Chase"]).all
     end
   end
