@@ -30,19 +30,6 @@ describe RecordCache::Dispatcher do
     @apple_dispatcher[:unknown].should == nil
   end
 
-  it "should return cacheable? true if there is a cacheable strategy that accepts the query" do
-    query = RecordCache::Query.new
-    mock(@apple_dispatcher).first_cacheable_strategy(query) { Object.new }
-    @apple_dispatcher.cacheable?(query).should == true
-  end
-
-  it "should delegate fetch to the first cacheable strategy" do
-    query = RecordCache::Query.new
-    banana_dispatcher = Banana.record_cache
-    mock(banana_dispatcher).first_cacheable_strategy(query) { mock(Object.new).fetch(query) }
-    banana_dispatcher.fetch(query)
-  end
-  
   context "record_change" do
     it "should dispatch record_change to all strategies" do
       apple = Apple.first

@@ -39,15 +39,10 @@ module RecordCache
       @strategy_by_attribute[attribute]
     end
 
-    # Can the cache retrieve the records based on this query?
-    def cacheable?(query)
-      !!first_cacheable_strategy(query)
-    end
-
     # retrieve the record(s) based on the given query (check with cacheable?(query) first)
-    def fetch(query)
-      # fetch the results using the first strategy that accepts this query
-      fetch_from_first_cacheable_strategy(query)
+    def fetch(query, &block)
+      strategy = query && ordered_strategies.detect { |strategy| strategy.cacheable?(query) }
+      strategy ? strategy.fetch(query) : yield
     end
 
     # Update the version store and the record store (used by callbacks)
@@ -77,16 +72,6 @@ module RecordCache
       store ||= Rails.cache if defined?(::Rails)
       store ||= ActiveSupport::Cache.lookup_store(:memory_store)
       RecordCache::MultiRead.test(store)
-    end
-
-    # Retrieve the data from the first strategy that can handle the query.
-    def fetch_from_first_cacheable_strategy(query)
-      first_cacheable_strategy(query).fetch(query)
-    end
-
-    # Find the first strategy that can handle this query.
-    def first_cacheable_strategy(query)
-      ordered_strategies.detect { |strategy| strategy.cacheable?(query) }
     end
 
     # Retrieve all strategies ordered by the fastest strategy first (currently :id, :unique, :index)
