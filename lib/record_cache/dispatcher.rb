@@ -1,12 +1,12 @@
 module RecordCache
-  
+
   # Every model that calls cache_records will receive an instance of this class
   # accessible through +<model>.record_cache+
   #
   # The dispatcher is responsible for dispatching queries, record_changes and invalidation calls
   # to the appropriate cache strategies.
   class Dispatcher
-    
+
     # Retrieve all strategies ordered by fastest strategy first.
     #
     # Roll your own cache strategies by extending from +RecordCache::Strategy::Base+,
@@ -70,7 +70,7 @@ module RecordCache
     end
 
     private
-    
+
     # Find the cache store for the records (using the :store option)
     def record_store(store)
       store = RecordCache::Base.stores[store] || ActiveSupport::Cache.lookup_store(store) if store.is_a?(Symbol)
@@ -93,8 +93,10 @@ module RecordCache
     def ordered_strategies
       @ordered_strategies ||= begin
         last_index = Dispatcher.strategy_classes.size
-        # sort the strategies baed on the +strategy_classes+ index
-        ordered = @strategy_by_attribute.values.sort{ |x,y| Dispatcher.strategy_classes.index(x.class) || last_index <=> Dispatcher.strategy_classes.index(y.class) || last_index }
+        # sort the strategies based on the +strategy_classes+ index
+        ordered = @strategy_by_attribute.values.sort do |x,y|
+          (Dispatcher.strategy_classes.index(x.class) || last_index) <=> (Dispatcher.strategy_classes.index(y.class) || last_index)
+        end
         ordered
       end
     end
