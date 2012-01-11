@@ -136,10 +136,12 @@ module RecordCache
       def visit_Arel_Nodes_Grouping o
         return unless @cacheable
         # "`calendars`.account_id = 5"
-        if @table_name && o.expr =~ /^`#{@table_name}`\.`?(\w*)`?\s*=\s*(\d+)$/
+        table = ::ActiveRecord::Base.connection.quote_table_name(@table_name)
+        column_regexp = ::ActiveRecord::Base.connection.quote_column_name('?(\w*)') + '?'
+        if @table_name && o.expr =~ /^#{table}\.#{column_regexp}\s*=\s*(\d+)$/
           @cacheable = @query.where($1, $2.to_i)
         # "`service_instances`.`id` IN (118,80,120,82)"
-        elsif o.expr =~ /^`#{@table_name}`\.`?(\w*)`?\s*IN\s*\(([\d\s,]+)\)$/
+        elsif o.expr =~ /^#{table}\.#{column_regexp}\s*IN\s*\(([\d\s,]+)\)$/
           @cacheable = @query.where($1, $2.split(',').map(&:to_i))
         else
           @cacheable = false
