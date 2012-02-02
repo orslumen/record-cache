@@ -351,7 +351,7 @@ module RecordCache
         def delete_with_record_cache(method = options[:dependent])
           # invalidate :id cache for all record
           if load_target
-            target.class.record_cache.invalidate(record.id) if target.class.record_cache? unless target.new_record?
+            target.class.record_cache.invalidate(target.id) if target.class.record_cache? unless target.new_record?
           end
           # invalidate the referenced class for the attribute/value pair on the index cache
           @reflection.klass.record_cache.invalidate(@reflection.foreign_key.to_sym, @owner.id) if @reflection.klass.record_cache?
