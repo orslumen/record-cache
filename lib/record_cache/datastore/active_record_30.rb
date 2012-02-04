@@ -168,7 +168,7 @@ module RecordCache
       def handle_order_by(order)
         order.to_s.split(",").each do |o|
           # simple sort order (+peope.id+ can be replaced by +id+, as joins are not allowed anyways)
-          if o.match(/^\s*([\w\.]*)\s*(|ASC|DESC|)\s*$/)
+          if o.match(/^\s*([\w\.]*)\s*((?i)|ASC|DESC|)\s*$/)
             asc = $2 == "DESC" ? false : true
             @query.order_by($1.split('.').last, asc)
           else
