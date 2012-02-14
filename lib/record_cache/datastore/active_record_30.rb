@@ -21,8 +21,14 @@ module RecordCache
           after_commit :record_cache_create,  :on => :create
           after_commit :record_cache_update,  :on => :update
           after_commit :record_cache_destroy, :on => :destroy
+          define_callbacks :cache_write
+          
         end
   
+        def after_cache_write(meth)
+          set_callback :cache_write, :after, meth
+        end
+
         # Retrieve the records, possibly from cache
         def find_by_sql_with_record_cache(*args)
            # no caching please

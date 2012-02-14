@@ -64,6 +64,7 @@ module RecordCache
       # dispatch the record change to all known strategies
       @strategy_by_attribute.values.each { |strategy| strategy.record_change(record, action) }
       record.send(:notify_observers, :after_cache_write)
+      record.send(:run_callbacks, :cache_write) { }
     end
 
     # Explicitly invalidate one or more records
