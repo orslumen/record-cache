@@ -55,6 +55,12 @@ module RecordCache
       end
     end
 
+    def invalidate_everything!
+      @strategy_by_attribute.each do |attrib, strategy|
+        strategy.invalidate_everything!
+      end
+    end
+
     # Update the version store and the record store (used by callbacks)
     # @param record the updated record (possibly with
     # @param action one of :create, :update or :destroy

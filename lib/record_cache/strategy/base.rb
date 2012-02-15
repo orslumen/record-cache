@@ -22,6 +22,7 @@ module RecordCache
 
       # Fetch all records and sort and filter locally
       def fetch(query)
+        @table_version = (version_store.current(@cache_key_prefix) || version_store.renew(@cache_key_prefix))
         records = fetch_records(query)
         Util.filter!(records, query.wheres) if query.wheres.size > 0
         Util.sort!(records, query.sort_orders) if query.sorted?
@@ -67,9 +68,16 @@ module RecordCache
         @statistics ||= RecordCache::Statistics.find(@base, @attribute)
       end
 
+      def invalidate_everything!
+        new_version = version_store.increment(@cache_key_prefix)
+        if new_version == 0
+          version_store.renew(@cache_key_prefix)
+        end
+      end
+
       # retrieve the cache key for the given id, e.g. rc/person/14
       def cache_key(id)
-        "#{@cache_key_prefix}#{id}"
+        "#{@cache_key_prefix}#{@table_version}/#{id}"
       end
 
       # retrieve the versioned record key, e.g. rc/person/14v1
