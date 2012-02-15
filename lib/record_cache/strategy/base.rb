@@ -12,6 +12,7 @@ module RecordCache
         @attribute = attribute
         @record_store = record_store
         @cache_key_prefix = "rc/#{options[:key] || @base.name}/"
+        @table_version = (version_store.current(@cache_key_prefix) || version_store.renew(@cache_key_prefix))
       end
       
       # Retrieve the +attribute+ for this strategy (unique per model).
