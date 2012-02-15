@@ -35,7 +35,7 @@ module RecordCache
     def increment(key)
       version = @store.increment(key, 1)
       # renew key in case the version store already purged the key
-      if version.nil? || version == 1
+      if version.nil? || version <= 1
         version = renew(key)
       else
         RecordCache::Base.logger.debug("Version Store: incremented #{key}: #{version - 1} => #{version}") if RecordCache::Base.logger.debug?
