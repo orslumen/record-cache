@@ -29,6 +29,13 @@ module RecordCache
         records = records[0..query.limit-1] if query.limit
         records
       end
+      
+      def invalidate_everything!
+        new_version = version_store.increment(@cache_key_prefix)
+        if new_version == 0
+          version_store.renew(@cache_key_prefix)
+        end
+      end
 
       # Can the cache retrieve the records based on this query?
       def cacheable?(query)
@@ -66,13 +73,6 @@ module RecordCache
       # find the statistics for this cache strategy
       def statistics
         @statistics ||= RecordCache::Statistics.find(@base, @attribute)
-      end
-
-      def invalidate_everything!
-        new_version = version_store.increment(@cache_key_prefix)
-        if new_version == 0
-          version_store.renew(@cache_key_prefix)
-        end
       end
 
       # retrieve the cache key for the given id, e.g. rc/person/14
