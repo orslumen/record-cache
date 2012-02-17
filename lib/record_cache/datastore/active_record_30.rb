@@ -317,12 +317,55 @@ module RecordCache
           delete_records_without_record_cache(records)
         end
       end
+   end
+ end
+
+  module ActiveRecord
+    module Associations
+      module AssociationCollection
+        class << self
+          def included(klass)
+            klass.extend ClassMethods
+            klass.send(:include, InstanceMethods)
+            klass.class_eval do
+              alias_method_chain :destroy, :record_cache
+            end
+          end
+        end
+
+        module ClassMethods
+        end
+
+        module InstanceMethods
+          # The default AssociationCollection#destroy method will
+          # destroy the associated records that are passed in, and
+          # then perform a fetch to re-populate the association.
+          #
+          # Unfortunately, because the DELETE calls are inside of a
+          # transaction that has not committed yet the changes are not
+          # visible to record cache so the fetch must bypass
+          # record-cache which is why the without_record_cache block
+          # is here.
+          #
+          # At some point in the future it may be required to remove
+          # the fetch entirely if the records are not actually DB
+          # backed.  It is *believed* that the association records can
+          # be updated without an explicit fetch thus meaning the
+          # fetch can be safely removed, but requires more work to
+          # verify.
+          def destroy_with_record_cache(*records)
+            RecordCache::Base.without_record_cache do
+              destroy_without_record_cache(*records)
+            end
+          end
+        end
+      end
     end
   end
-
 end
 
 ActiveRecord::Base.send(:include, RecordCache::ActiveRecord::Base)
 Arel::TreeManager.send(:include, RecordCache::Arel::TreeManager)
 ActiveRecord::Relation.send(:include, RecordCache::ActiveRecord::UpdateAll)
 ActiveRecord::Associations::HasManyAssociation.send(:include, RecordCache::ActiveRecord::HasMany)
+ActiveRecord::Associations::AssociationCollection.send(:include, RecordCache::ActiveRecord::Associations::AssociationCollection)
