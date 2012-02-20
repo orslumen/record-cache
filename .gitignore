@@ -11,4 +11,4 @@
 *.log
 *.gem
 *.sqlite3
-
+.svn
