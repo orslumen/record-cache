@@ -202,7 +202,7 @@ module RecordCache
       def visit_Arel_Nodes_Equality o
         key, value = visit(o.left), visit(o.right)
         # both ? and \u0000 are used to mark query bindings (thanks to Arkadiusz Kuryłowicz for the \u0000)
-        if value.to_s == BINDING_MARKER_1 || value.to_s == BINDING_MARKER_2
+        if value.to_s =~ /^(\?|\u0000|\$\d+)$/
           # puts "bindings: #{@bindings.inspect}, key = #{key.to_s}"
           value = @bindings[key.to_s] || value
         end
