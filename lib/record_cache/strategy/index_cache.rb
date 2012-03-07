@@ -118,7 +118,7 @@ module RecordCache
         if ids
           ids = Array.new(ids)
           yield ids
-          record_store.write(versioned_key(key, version), ids)
+          record_store.write(versioned_key(key, version), ids.compact)
         end
       end
   
