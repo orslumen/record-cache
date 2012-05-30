@@ -6,6 +6,8 @@ module RecordCache
       # parse the options and return (an array of) instances of this strategy
       def self.parse(base, record_store, options)
         return nil unless options[:full_table]
+        return nil unless base.table_exists?
+        
         FulltableCache.new(base, :full_table, record_store, options)
       end
 
