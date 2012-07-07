@@ -3,8 +3,11 @@ module RecordCache
     attr_accessor :store
 
     def initialize(store)
-      raise "Must be an ActiveSupport::Cache::Store" unless store.is_a?(ActiveSupport::Cache::Store)
-      @store = store
+	  if store.is_a?(ActiveSupport::Cache::Store) || store.is_a?(ActiveSupport::Cache::DalliStore)
+        @store = store
+      else 
+        raise "Must be an ActiveSupport::Cache::Store"
+      end
     end
 
     # Retrieve the current versions for the given key
