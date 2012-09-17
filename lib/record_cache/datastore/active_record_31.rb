@@ -78,8 +78,6 @@ module RecordCache
     # Rejects queries with grouping / having / offset / etc.
     class QueryVisitor < ::Arel::Visitors::Visitor
       DESC = "DESC".freeze
-      BINDING_MARKER_1 = "?".freeze
-      BINDING_MARKER_2 = "\u0000".freeze
       COMMA = ",".freeze
 
       def initialize(bindings)
@@ -201,8 +199,8 @@ module RecordCache
 
       def visit_Arel_Nodes_Equality o
         key, value = visit(o.left), visit(o.right)
-        # both ? and \u0000 are used to mark query bindings (thanks to Arkadiusz Kuryłowicz for the \u0000)
-        if value.to_s == BINDING_MARKER_1 || value.to_s == BINDING_MARKER_2
+        # several different binding markers exist depending on the db driver used (MySQL, Postgress supported)
+        if value.to_s =~ /^(\?|\u0000|\$\d+)$/
           # puts "bindings: #{@bindings.inspect}, key = #{key.to_s}"
           value = @bindings[key.to_s] || value
         end
