@@ -20,18 +20,15 @@ describe RecordCache::Strategy::UniqueIndexCache do
     end
 
     it "should write full hits to the debug log" do
-      mock(RecordCache::Base.logger).debug(/UniqueIndexCache on 'id' hit for ids 1|^(?!UniqueIndexCache)/).times(any_times)
-      Apple.find(1)
+      lambda { Apple.find(1) }.should log(:debug, %(UniqueIndexCache on 'id' hit for ids 1))
     end
 
     it "should write full miss to the debug log" do
-      mock(RecordCache::Base.logger).debug(/UniqueIndexCache on 'id' miss for ids 2|^(?!UniqueIndexCache)/).times(any_times)
-      Apple.find(2)
+      lambda { Apple.find(2) }.should log(:debug, %(UniqueIndexCache on 'id' miss for ids 2))
     end
     
     it "should write partial hits to the debug log" do
-      mock(RecordCache::Base.logger).debug(/UniqueIndexCache on 'id' partial hit for ids \[1, 2\]: missing \[2\]|^(?!UniqueIndexCache)/).times(any_times)
-      Apple.where(:id => [1,2]).all
+      lambda { Apple.where(:id => [1,2]).all }.should log(:debug, %(UniqueIndexCache on 'id' partial hit for ids [1, 2]: missing [2]))
     end
   end
 

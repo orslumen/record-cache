@@ -24,13 +24,11 @@ describe RecordCache::Strategy::IndexCache do
     end
 
     it "should write hit to the debug log" do
-      mock(RecordCache::Base.logger).debug(/IndexCache hit for rc\/apl\/store_id=1v\d+: found 5 ids|^(?!IndexCache)/).times(any_times)
-      Apple.where(:store_id => 1).all
+      lambda { Apple.where(:store_id => 1).all }.should log(:debug, /IndexCache hit for rc\/apl\/store_id=1v\d+: found 5 ids/)
     end
 
     it "should write miss to the debug log" do
-      mock(RecordCache::Base.logger).debug(/IndexCache miss for rc\/apl\/store_id=2v\d+: found no ids|^(?!IndexCache)/).times(any_times)
-      Apple.where(:store_id => 2).all
+      lambda { Apple.where(:store_id => 2).all }.should log(:debug, /IndexCache miss for rc\/apl\/store_id=2v\d+: found no ids/)
     end
   end
 

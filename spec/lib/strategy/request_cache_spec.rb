@@ -20,13 +20,11 @@ describe RecordCache::Strategy::RequestCache do
     end
 
     it "should write hit to the debug log" do
-      mock(RecordCache::Base.logger).debug(/RequestCache hit for 1\?id=1|^(?!RequestCache)/).times(any_times)
-      Store.find(1)
+      lambda { Store.find(1) }.should log(:debug, %(RequestCache hit for 1?id=1))
     end
 
     it "should write miss to the debug log" do
-      mock(RecordCache::Base.logger).debug(/^RequestCache miss for 1\?id=2|^(?!RequestCache)/).times(any_times)
-      Store.find(2)
+      lambda { Store.find(2) }.should log(:debug, %(RequestCache miss for 1?id=2))
     end
   end
 

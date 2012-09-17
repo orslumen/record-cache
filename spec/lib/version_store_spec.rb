@@ -51,10 +51,7 @@ describe RecordCache::VersionStore do
     end
     
     it "should write to the debug log" do
-      mock(RecordCache::Base.logger).debug?{ true }
-      mock(RecordCache::Base.logger).debug(/Version Store: renew key1: nil => \d+/)
-      @version_store.renew("key1")
-      stub(RecordCache::Base.logger).debug?{ false } # to prevent the ResettableVersionStore from logging in +after(:each)+
+      lambda { @version_store.renew("key1") }.should log(:debug, /Version Store: renew key1: nil => \d+/)
     end
   end
 
@@ -73,10 +70,7 @@ describe RecordCache::VersionStore do
     end
 
     it "should write to the debug log" do
-      mock(RecordCache::Base.logger).debug?{ true }
-      mock(RecordCache::Base.logger).debug("Version Store: incremented key1: 1000 => 1001")
-      @version_store.increment("key1")
-      stub(RecordCache::Base.logger).debug?{ false } # to prevent the ResettableVersionStore from logging in +after(:each)+
+      lambda { @version_store.increment("key1") }.should log(:debug, %(Version Store: incremented key1: 1000 => 1001))
     end
   end
 
@@ -94,10 +88,7 @@ describe RecordCache::VersionStore do
     end
 
     it "should write to the debug log" do
-      mock(RecordCache::Base.logger).debug?{ true }
-      mock(RecordCache::Base.logger).debug("Version Store: deleted key1")
-      @version_store.delete("key1")
-      stub(RecordCache::Base.logger).debug?{ false } # to prevent the ResettableVersionStore from logging in +after(:each)+
+      lambda { @version_store.delete("key1") }.should log(:debug, %(Version Store: deleted key1))
     end
   end
 

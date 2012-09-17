@@ -1,5 +1,4 @@
-# coding: utf-8
-$KCODE = 'UTF8'
+# encoding: utf-8
 require 'spec_helper'
 
 describe RecordCache::Base do
