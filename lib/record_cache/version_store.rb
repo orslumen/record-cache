@@ -3,7 +3,9 @@ module RecordCache
     attr_accessor :store
 
     def initialize(store)
-      raise "Must be an ActiveSupport::Cache::Store" unless store.is_a?(ActiveSupport::Cache::Store)
+      [:increment, :write, :read, :read_multi, :delete].each do |method|
+        raise "Store #{store.inspect} must respond to #{method}" unless store.respond_to?(method)
+      end
       @store = store
     end
 
