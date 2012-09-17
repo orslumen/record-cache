@@ -47,7 +47,7 @@ module RecordCache
   
       # log cache hit/miss to debug log
       def log_cache_hit(key, hit)
-        RecordCache::Base.logger.debug("RequestCache #{hit ? 'hit' : 'miss'} for #{key}")
+        RecordCache::Base.logger.debug{ "RequestCache #{hit ? 'hit' : 'miss'} for #{key}" }
       end
 
     end

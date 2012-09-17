@@ -72,9 +72,7 @@ module RecordCache
   
       # log cache hit/miss to debug log
       def log_full_table_cache_hit(key, records)
-        hit = records ? "hit" : "miss"
-        msg = "FullTableCache #{hit} for model #{@base.name}"
-        RecordCache::Base.logger.debug(msg)
+        RecordCache::Base.logger.debug{ "FullTableCache #{records ? 'hit' : 'miss'} for model #{@base.name}" }
       end
 
     end

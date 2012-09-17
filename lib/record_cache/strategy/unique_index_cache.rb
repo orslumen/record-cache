@@ -113,7 +113,7 @@ module RecordCache
         hit = missing_ids.empty? ? "hit" : ids.size == missing_ids.size ? "miss" : "partial hit"
         missing = missing_ids.empty? || ids.size == missing_ids.size ? "" : ": missing #{missing_ids.inspect}"
         msg = "UniqueIndexCache on '#{@attribute}' #{hit} for ids #{ids.size == 1 ? ids.first.inspect : ids.inspect}#{missing}"
-        RecordCache::Base.logger.debug(msg)
+        RecordCache::Base.logger.debug{ msg }
       end
 
     end

@@ -27,7 +27,7 @@ module RecordCache
     def renew(key)
       new_version = (Time.current.to_f * 10000).to_i
       @store.write(key, new_version, :raw => true)
-      RecordCache::Base.logger.debug("Version Store: renew #{key}: nil => #{new_version}") if RecordCache::Base.logger.debug?
+      RecordCache::Base.logger.debug{ "Version Store: renew #{key}: nil => #{new_version}" }
       new_version
     end
 
@@ -38,7 +38,7 @@ module RecordCache
       if version.nil? || version == 1
         version = renew(key)
       else
-        RecordCache::Base.logger.debug("Version Store: incremented #{key}: #{version - 1} => #{version}") if RecordCache::Base.logger.debug?
+        RecordCache::Base.logger.debug{ "Version Store: incremented #{key}: #{version - 1} => #{version}" }
       end
       version
     end
@@ -46,7 +46,7 @@ module RecordCache
     # Delete key from the version store (records cached in the Record Store belonging to this key will become unreachable)
     def delete(key)
       deleted = @store.delete(key)
-      RecordCache::Base.logger.debug("Version Store: deleted #{key}") if RecordCache::Base.logger.debug?
+      RecordCache::Base.logger.debug{ "Version Store: deleted #{key}" }
       deleted
     end
 
