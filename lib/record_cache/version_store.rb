@@ -4,7 +4,7 @@ module RecordCache
 
     def initialize(store)
       [:increment, :write, :read, :read_multi, :delete].each do |method|
-        raise "Store #{store.inspect} must respond to #{method}" unless store.respond_to?(method)
+        raise "Store #{store.class.name} must respond to #{method}" unless store.respond_to?(method)
       end
       @store = store
     end

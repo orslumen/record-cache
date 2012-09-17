@@ -9,7 +9,7 @@ describe RecordCache::VersionStore do
   end
   
   it "should only accept ActiveSupport cache stores" do
-    lambda { RecordCache::VersionStore.new(Object.new) }.should raise_error("Must be an ActiveSupport::Cache::Store")
+    lambda { RecordCache::VersionStore.new(Object.new) }.should raise_error("Store Object must respond to increment")
   end
 
   context "current" do
