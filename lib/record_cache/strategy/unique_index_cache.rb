@@ -9,6 +9,8 @@ module RecordCache
 
       # parse the options and return (an array of) instances of this strategy
       def self.parse(base, record_store, options)
+        return nil unless base.table_exists?
+        
         attributes = [options[:unique_index]].flatten.compact
         # add unique index for :id by default
         attributes << :id if base.columns_hash['id'] unless base.record_cache[:id] 
