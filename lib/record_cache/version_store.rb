@@ -35,10 +35,14 @@ module RecordCache
 
     # Increment the current version for the given key, in case of record updates
     def increment(key)
-      version = @store.increment(key, 1)
+      new_version = (Time.current.to_f * 10000).to_i
+      version = @store.increment(key, 1, :initial => new_version)
       # renew key in case the version store already purged the key
       if version.nil? || version == 1
         version = renew(key)
+      elsif version == new_version
+        # only log statement in case the :initial option was supported by the cache store
+        RecordCache::Base.logger.debug{ "Version Store: renew #{key}: nil => #{new_version}" }
       else
         RecordCache::Base.logger.debug{ "Version Store: incremented #{key}: #{version - 1} => #{version}" }
       end
