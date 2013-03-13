@@ -239,4 +239,17 @@ describe RecordCache::Strategy::IndexCache do
     end
   end
 
+  context 'subclassing' do
+    class RedDelicious < Apple; end
+    apple = Apple.find(1)
+    delicious = RedDelicious.find(1)
+    store_id = apple.store_id
+    delicious.store_id = 100
+    delicious.save
+    apple = Apple.find(1)
+    apple.store_id.should_not == store_id
+    apple.store_id = store_id
+    apple.save
+  end
+
 end
