@@ -93,7 +93,9 @@ module RecordCache
           # go straight to SQL result for optimal performance
           sql = @base.select('id').where(@attribute => value).to_sql
           ids = []; @base.connection.execute(sql).each{ |row| ids << (row.is_a?(Hash) ? row['id'] : row.first).to_i }
-          record_store.write(versioned_key, ids)
+          if RecordCache::Base.cache_writeable?
+            record_store.write(versioned_key, ids)
+          end
           ids
         end
       end

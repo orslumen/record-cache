@@ -83,6 +83,12 @@ module RecordCache
         @status ||= RecordCache::ENABLED
       end
 
+      # Returns true if it safe to write to cache
+      # Shouldn't write to cache during a transaction; we leave stale data when the transaction rolls back
+      def cache_writeable?
+        ::ActiveRecord::Base.connection.open_transactions == 0
+      end
+
       # execute block of code without using the records cache to fetch records
       # note that updates are still written to the cache, as otherwise other
       # workers may receive stale results.
