@@ -239,6 +239,7 @@ module RecordCache
         o
       end
       alias :visit_Arel_Nodes_SqlLiteral :visit_Object
+      alias :visit_Arel_Nodes_BindParam     :visit_Object
       alias :visit_Arel_SqlLiteral :visit_Object # This is deprecated
       alias :visit_String :visit_Object
       alias :visit_NilClass :visit_Object
