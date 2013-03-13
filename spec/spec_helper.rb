@@ -34,6 +34,7 @@ RSpec.configure do |config|
   config.mock_with :rr
   
   config.before(:each) do
+    stub(RecordCache::Base).cache_writeable? {true}
     RecordCache::Base.enable
     DatabaseCleaner.start
   end
