@@ -12,6 +12,7 @@ module RecordCache
         @attribute = attribute
         @record_store = record_store
         @cache_key_prefix = "rc/#{options[:key] || @base.name}/"
+        @ttl = options[:ttl]
       end
       
       # Retrieve the +attribute+ for this strategy (unique per model).

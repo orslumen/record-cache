@@ -26,9 +26,9 @@ module RecordCache
           increment_without_reset(key)
         end
         
-        def renew_with_reset(key)
+        def renew_with_reset(key, opts = {})
           updated_version_keys << key
-          renew_without_reset(key)
+          renew_without_reset(key, opts)
         end
 
         def reset!
