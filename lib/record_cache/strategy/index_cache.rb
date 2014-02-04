@@ -66,7 +66,7 @@ module RecordCache
         log_cache_hit(versioned_key, ids) if RecordCache::Base.logger.debug?
         statistics.add(1, ids ? 1 : 0) if statistics.active?
         # retrieve the ids from the DB if the result was not fresh
-        ids = fetch_ids_from_db(versioned_key, value) unless ids
+        ids = fetch_ids_from_db(versioned_key, value) unless (ids && ids.all? {|x| x})
         # use the IdCache to retrieve the records based on the ids
         records = @base.record_cache[:id].send(:fetch_records, ::RecordCache::Query.new({:id => ids}))
         records = records[0, query.limit] unless query.limit.nil? || records.nil?
@@ -93,7 +93,7 @@ module RecordCache
           # go straight to SQL result for optimal performance
           sql = @base.select('id').where(@attribute => value).to_sql
           ids = []; @base.connection.execute(sql).each{ |row| ids << (row.is_a?(Hash) ? row['id'] : row.first).to_i }
-          record_store.write(versioned_key, ids)
+          record_store.write(versioned_key, ids.compact)
           ids
         end
       end
@@ -120,7 +120,7 @@ module RecordCache
         if ids
           ids = Array.new(ids)
           yield ids
-          record_store.write(versioned_key(key, version), ids)
+          record_store.write(versioned_key(key, version), ids.compact)
         end
       end
   

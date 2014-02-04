@@ -12,6 +12,7 @@ module RecordCache
         @attribute = attribute
         @record_store = record_store
         @cache_key_prefix = "rc/#{options[:key] || @base.name}/"
+        @table_version = (version_store.current(@cache_key_prefix) || version_store.renew(@cache_key_prefix))
       end
       
       # Retrieve the +attribute+ for this strategy (unique per model).
@@ -22,11 +23,19 @@ module RecordCache
 
       # Fetch all records and sort and filter locally
       def fetch(query)
+        @table_version = (version_store.current(@cache_key_prefix) || version_store.renew(@cache_key_prefix))
         records = fetch_records(query)
         Util.filter!(records, query.wheres) if query.wheres.size > 0
         Util.sort!(records, query.sort_orders) if query.sorted?
         records = records[0..query.limit-1] if query.limit
         records
+      end
+      
+      def invalidate_everything!
+        new_version = version_store.increment(@cache_key_prefix)
+        if new_version == 0
+          version_store.renew(@cache_key_prefix)
+        end
       end
 
       # Can the cache retrieve the records based on this query?
@@ -69,7 +78,7 @@ module RecordCache
 
       # retrieve the cache key for the given id, e.g. rc/person/14
       def cache_key(id)
-        "#{@cache_key_prefix}#{id}"
+        "#{@cache_key_prefix}#{@table_version}/#{id}"
       end
 
       # retrieve the versioned record key, e.g. rc/person/14v1

@@ -141,10 +141,12 @@ module RecordCache
       def visit_Arel_Nodes_Grouping o
         return unless @cacheable
         # `calendars`.account_id = 5
-        if @table_name && o.expr =~ /^`#{@table_name}`\.`?(\w*)`?\s*=\s*(\d+)$/
+        table = ::ActiveRecord::Base.connection.quote_table_name(@table_name)
+        column_regexp = ::ActiveRecord::Base.connection.quote_column_name('?(\w*)') + '?'
+        if @table_name && o.expr =~ /^#{table}\.#{column_regexp}\s*=\s*(\d+)$/
           @cacheable = @query.where($1, $2.to_i)
         # `service_instances`.`id` IN (118,80,120,82)
-        elsif o.expr =~ /^`#{@table_name}`\.`?(\w*)`?\s*IN\s*\(([\d\s,]+)\)$/
+        elsif o.expr =~ /^#{table}\.#{column_regexp}\s*IN\s*\(([\d\s,]+)\)$/
           @cacheable = @query.where($1, $2.split(',').map(&:to_i))
         else
           @cacheable = false
@@ -171,7 +173,7 @@ module RecordCache
       def handle_order_by(order)
         order.to_s.split(COMMA).each do |o|
           # simple sort order (+peope.id+ can be replaced by +id+, as joins are not allowed anyways)
-          if o.match(/^\s*([\w\.]*)\s*(|ASC|DESC|)\s*$/)
+          if o.match(/^\s*([\w\.]*)\s*((?i)|ASC|DESC|)\s*$/)
             asc = $2 == DESC ? false : true
             @query.order_by($1.split('.').last, asc)
           else

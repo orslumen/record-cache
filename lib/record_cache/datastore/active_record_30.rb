@@ -21,8 +21,14 @@ module RecordCache
           after_commit :record_cache_create,  :on => :create
           after_commit :record_cache_update,  :on => :update
           after_commit :record_cache_destroy, :on => :destroy
+          define_callbacks :cache_write
+          
         end
   
+        def after_cache_write(meth)
+          set_callback :cache_write, :after, meth
+        end
+
         # Retrieve the records, possibly from cache
         def find_by_sql_with_record_cache(*args)
            # no caching please
@@ -136,10 +142,12 @@ module RecordCache
       def visit_Arel_Nodes_Grouping o
         return unless @cacheable
         # "`calendars`.account_id = 5"
-        if @table_name && o.expr =~ /^`#{@table_name}`\.`?(\w*)`?\s*=\s*(\d+)$/
+        table = ::ActiveRecord::Base.connection.quote_table_name(@table_name)
+        column_regexp = ::ActiveRecord::Base.connection.quote_column_name('?(\w*)') + '?'
+        if @table_name && o.expr =~ /^#{table}\.#{column_regexp}\s*=\s*(\d+)$/
           @cacheable = @query.where($1, $2.to_i)
         # "`service_instances`.`id` IN (118,80,120,82)"
-        elsif o.expr =~ /^`#{@table_name}`\.`?(\w*)`?\s*IN\s*\(([\d\s,]+)\)$/
+        elsif o.expr =~ /^#{table}\.#{column_regexp}\s*IN\s*\(([\d\s,]+)\)$/
           @cacheable = @query.where($1, $2.split(',').map(&:to_i))
         else
           @cacheable = false
@@ -166,7 +174,7 @@ module RecordCache
       def handle_order_by(order)
         order.to_s.split(",").each do |o|
           # simple sort order (+peope.id+ can be replaced by +id+, as joins are not allowed anyways)
-          if o.match(/^\s*([\w\.]*)\s*(|ASC|DESC|)\s*$/)
+          if o.match(/^\s*([\w\.]*)\s*((?i)|ASC|DESC|)\s*$/)
             asc = $2 == "DESC" ? false : true
             @query.order_by($1.split('.').last, asc)
           else
@@ -274,17 +282,7 @@ module RecordCache
 
           if record_cache?
             # when this condition is met, the arel.update method will be called on the current scope, see ActiveRecord::Relation#update_all
-            unless conditions || options.present? || @limit_value.present? != @order_values.present?
-              # get all attributes that contian a unique index for this model
-              unique_index_attributes = RecordCache::Strategy::UniqueIndexCache.attributes(self)
-              # go straight to SQL result (without instantiating records) for optimal performance
-              connection.execute(select(unique_index_attributes.map(&:to_s).join(',')).to_sql).each do |row|
-                # invalidate the unique index for all attributes
-                unique_index_attributes.each_with_index do |attribute, index|
-                  record_cache.invalidate(attribute, (row.is_a?(Hash) ? row[attribute.to_s] : row[index]) )
-                end
-              end
-            end
+            record_cache.invalidate_everything!
           end
 
           result
@@ -319,12 +317,55 @@ module RecordCache
           delete_records_without_record_cache(records)
         end
       end
+   end
+ end
+
+  module ActiveRecord
+    module Associations
+      module AssociationCollection
+        class << self
+          def included(klass)
+            klass.extend ClassMethods
+            klass.send(:include, InstanceMethods)
+            klass.class_eval do
+              alias_method_chain :destroy, :record_cache
+            end
+          end
+        end
+
+        module ClassMethods
+        end
+
+        module InstanceMethods
+          # The default AssociationCollection#destroy method will
+          # destroy the associated records that are passed in, and
+          # then perform a fetch to re-populate the association.
+          #
+          # Unfortunately, because the DELETE calls are inside of a
+          # transaction that has not committed yet the changes are not
+          # visible to record cache so the fetch must bypass
+          # record-cache which is why the without_record_cache block
+          # is here.
+          #
+          # At some point in the future it may be required to remove
+          # the fetch entirely if the records are not actually DB
+          # backed.  It is *believed* that the association records can
+          # be updated without an explicit fetch thus meaning the
+          # fetch can be safely removed, but requires more work to
+          # verify.
+          def destroy_with_record_cache(*records)
+            RecordCache::Base.without_record_cache do
+              destroy_without_record_cache(*records)
+            end
+          end
+        end
+      end
     end
   end
-
 end
 
 ActiveRecord::Base.send(:include, RecordCache::ActiveRecord::Base)
 Arel::TreeManager.send(:include, RecordCache::Arel::TreeManager)
 ActiveRecord::Relation.send(:include, RecordCache::ActiveRecord::UpdateAll)
 ActiveRecord::Associations::HasManyAssociation.send(:include, RecordCache::ActiveRecord::HasMany)
+ActiveRecord::Associations::AssociationCollection.send(:include, RecordCache::ActiveRecord::Associations::AssociationCollection)

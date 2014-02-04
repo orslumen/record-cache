@@ -82,7 +82,7 @@ module RecordCache
       values = [values] unless values.is_a?(Array)
       if type == :integer
         values = values.map{|value| value.to_i} unless values.first.is_a?(Fixnum)
-        return nil unless values.all?{ |value| value > 0 } # all values must be positive integers
+        return nil unless values.all?{ |value| value.is_a?(Fixnum) && value > 0 } # all values must be positive integers
       elsif type == :string
         values = values.map{|value| value.to_s} unless values.first.is_a?(String)
       end
