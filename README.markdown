@@ -3,7 +3,7 @@ Record Cache
 
 *Cache Active Model Records in Rails 3*
 
-Record Cache transparantly stores Records in a Cache Store and retrieve those Records from the store when queried (by ID) using Active Model.
+Record Cache transparently stores Records in a Cache Store and retrieve those Records from the store when queried (by ID) using Active Model.
 Cache invalidation is performed automatically when Records are created, updated or destroyed. Currently only Active Record is supported, but more
 data stores may be added in the future.
 
@@ -242,7 +242,7 @@ Development
 
     $ bundle
 
-    # run the specs
+    # run the specs (!requires ruby 1.9.3)
     $ bundle exec rake spec
 
     # run a single spec

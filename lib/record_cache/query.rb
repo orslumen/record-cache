@@ -80,9 +80,10 @@ module RecordCache
     def array_of_values(values, type)
       return nil unless values
       values = [values] unless values.is_a?(Array)
+      values.compact!
       if type == :integer
         values = values.map{|value| value.to_i} unless values.first.is_a?(Fixnum)
-        return nil unless values.all?{ |value| value > 0 } # all values must be positive integers
+        return nil unless values.all?{ |value| value && value > 0 } # all values must be positive integers
       elsif type == :string
         values = values.map{|value| value.to_s} unless values.first.is_a?(String)
       end
