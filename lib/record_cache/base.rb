@@ -140,14 +140,17 @@ module RecordCache
     module InstanceMethods
       def record_cache_create
         self.class.record_cache.record_change(self, :create) unless RecordCache::Base.status == RecordCache::DISABLED
+        true
       end
 
       def record_cache_update
         self.class.record_cache.record_change(self, :update) unless RecordCache::Base.status == RecordCache::DISABLED
+        true
       end
 
       def record_cache_destroy
         self.class.record_cache.record_change(self, :destroy) unless RecordCache::Base.status == RecordCache::DISABLED
+        true
       end
     end
 

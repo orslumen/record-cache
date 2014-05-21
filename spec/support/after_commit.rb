@@ -33,6 +33,7 @@ module ActiveRecord
         if !rolled_back && open_transactions == 1
           commit_transaction_records(false)
         end
+        true
       end
       alias_method_chain :transaction, :transactional_fixtures
 
@@ -64,6 +65,7 @@ module ActiveRecord
             @_current_transaction_records = real_current_transaction_records
           end
         end
+        true
       end
       alias_method_chain :commit_transaction_records, :transactional_fixtures
     end

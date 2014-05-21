@@ -18,6 +18,7 @@ module RecordCache
       # prepend_before_filter { |c| RecordCache::Strategy::RequestCache.clear }
       def self.clear
         @@request_store.clear
+        true
       end
 
       # Handle record change

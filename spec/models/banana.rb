@@ -16,10 +16,12 @@ class Banana < ActiveRecord::Base
 
     def do_after_initialize
       self.logs << "after_initialize"
+      true
     end
 
     def do_after_find
       self.logs << "after_find"
+      true
     end
 
 end
