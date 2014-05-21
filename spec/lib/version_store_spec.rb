@@ -72,6 +72,13 @@ describe RecordCache::VersionStore do
     it "should write to the debug log" do
       lambda { @version_store.increment("key1") }.should log(:debug, %(Version Store: incremented key1: 1000 => 1001))
     end
+
+    it "should write to the debug log when initial option is accepted" do
+      stub(@version_store.store).increment do |key, one, options|
+        options[:initial]
+      end
+      lambda { @version_store.increment("unknown_key") }.should log(:debug, /Version Store: renew unknown_key: nil => \d+/)
+    end
   end
 
   context "delete" do

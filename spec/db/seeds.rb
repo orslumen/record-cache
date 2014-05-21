@@ -41,5 +41,10 @@ ActiveRecord::Schema.define :version => 1 do
   Pear.create!(:name => "Blue Pear 3", :store => @blue_fruits, :person => @chase)
   Pear.create!(:name => "Blue Pear 4", :store => @blue_fruits, :person => @chase)
 
+  Language.create!(:name => "English (US)",    :locale => "en-US")
+  Language.create!(:name => "English (GB)",    :locale => "en-GB")
+  Language.create!(:name => "Nederlands (NL)", :locale => "du-NL")
+  Language.create!(:name => "Magyar",          :locale => "hu")
+
   RecordCache::Base.enable
 end

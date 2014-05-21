@@ -242,17 +242,14 @@ Development
 
     $ bundle
 
-    # run the specs (!requires ruby 1.9.3)
-    $ bundle exec rake spec
+    # run the specs (requires ruby 1.9.3)
+    $ appraisal rake
+
+    # run the specs for a particular version (supported are rails-30 and rails-31)
+    $ appraisal rails-30 rake
 
     # run a single spec
-    $ bundle exec rspec ./spec/lib/strategy/base_spec.rb:61
-    
-    # make sure Rails 3.0 support is also fine:
-    $ vi record-cache.gemspec
-      replace [">= 3.0"] with [">= 3.0"], "< 3.1"
-    $ bundle update
-    $ bundle exec rake spec
+    $ appraisal rails-30 rspec ./spec/lib/strategy/base_spec.rb:61
 
 Deploying the gem:
 

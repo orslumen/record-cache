@@ -12,7 +12,7 @@ module RecordCache
     # Roll your own cache strategies by extending from +RecordCache::Strategy::Base+,
     # and registering it here +RecordCache::Dispatcher.strategy_classes << MyStrategy+
     def self.strategy_classes
-      @strategy_classes ||= [RecordCache::Strategy::RequestCache, RecordCache::Strategy::UniqueIndexCache, RecordCache::Strategy::FullTableCache, RecordCache::Strategy::IndexCache]
+      @strategy_classes ||= [RecordCache::Strategy::RequestCache, RecordCache::Strategy::IndexCache, RecordCache::Strategy::UniqueIndexCache, RecordCache::Strategy::FullTableCache]
     end
 
     def initialize(base)

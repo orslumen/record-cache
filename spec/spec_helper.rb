@@ -2,6 +2,11 @@ dir = File.dirname(__FILE__)
 $LOAD_PATH.unshift dir + "/../lib"
 $LOAD_PATH.unshift dir
 
+require 'simplecov'
+SimpleCov.start do
+  add_filter '/spec/'
+end
+
 require "rubygems"
 require "test/unit"
 require "rspec"

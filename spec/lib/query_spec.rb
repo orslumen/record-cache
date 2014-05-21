@@ -38,9 +38,9 @@ describe RecordCache::Query do
         @query.where_values(:id).should == nil
       end
 
-      it "should return nil if one of the values is nil" do
+      it "should return remove nil from the values" do
         @query.where(:id, ["1", nil, "3"])
-        @query.where_values(:id).should == nil
+        @query.where_values(:id).should == [1,3]
       end
 
       it "should retrieve an array of integers when a single integer is provided" do

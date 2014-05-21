@@ -79,7 +79,7 @@ module RecordCache
 
     def array_of_values(values, type)
       return nil unless values
-      values = [values] unless values.is_a?(Array)
+      values = values.is_a?(Array) ? values.dup : [values]
       values.compact!
       if type == :integer
         values = values.map{|value| value.to_i} unless values.first.is_a?(Fixnum)

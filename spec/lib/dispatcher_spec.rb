@@ -6,7 +6,7 @@ describe RecordCache::Dispatcher do
   end
 
   it "should return the (ordered) strategy classes" do
-    RecordCache::Dispatcher.strategy_classes.should == [RecordCache::Strategy::RequestCache, RecordCache::Strategy::UniqueIndexCache, RecordCache::Strategy::FullTableCache, RecordCache::Strategy::IndexCache]
+    RecordCache::Dispatcher.strategy_classes.should == [RecordCache::Strategy::RequestCache, RecordCache::Strategy::IndexCache, RecordCache::Strategy::UniqueIndexCache, RecordCache::Strategy::FullTableCache]
   end
 
   it "should be able to register a new strategy" do

@@ -2,7 +2,17 @@
 require 'spec_helper'
 
 describe RecordCache::Strategy::Base do
-  
+
+  it "should force implementation of self.parse method" do
+    module RecordCache
+      module Strategy
+        class MissingParseCache < Base
+        end
+      end
+    end
+    lambda { RecordCache::Strategy::MissingParseCache.parse(1,2,3) }.should raise_error(NotImplementedError)
+  end
+
   it "should provide easy access to the Version Store" do
     Apple.record_cache[:id].send(:version_store).should == RecordCache::Base.version_store
   end

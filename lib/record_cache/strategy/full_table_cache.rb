@@ -8,7 +8,7 @@ module RecordCache
         return nil unless options[:full_table]
         return nil unless base.table_exists?
         
-        FulltableCache.new(base, :full_table, record_store, options)
+        FullTableCache.new(base, :full_table, record_store, options)
       end
 
       # Can the cache retrieve the records based on this query?

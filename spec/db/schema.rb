@@ -45,4 +45,9 @@ ActiveRecord::Schema.define :version => 0 do
     t.integer :store_id
   end
 
+  create_table :languages, :force => true do |t|
+    t.string  :name
+    t.string  :locale
+  end
+
 end
