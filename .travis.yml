@@ -1,0 +1,22 @@
+language: ruby
+rvm:
+  - 1.9.3
+  - 2.0.0
+  - 2.1.0
+  - jruby-19mode
+  - ruby-head
+  - jruby-head
+
+matrix:
+  allow_failures:
+    - rvm: rbx2
+    - rvm: jruby-19mode
+    - rvm: ruby-head
+    - rvm: jruby-head
+
+gemfile:
+  - gemfiles/rails_30.gemfile
+  - gemfiles/rails_31.gemfile
+  - gemfiles/rails_32.gemfile
+
+script: 'bundle exec rake'
