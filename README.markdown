@@ -1,6 +1,9 @@
 Record Cache
 ============
 
+[![Build Status](http://img.shields.io/travis/orslumen/record-cache.svg?style=flat)](https://travis-ci.org/orslumen/record-cache)
+[![Gem Version](http://img.shields.io/gem/v/record-cache.svg?style=flat)](https://rubygems.org/gems/record-cache)
+
 *Cache Active Model Records in Rails 3*
 
 Record Cache transparently stores Records in a Cache Store and retrieve those Records from the store when queried (by ID) using Active Model.
