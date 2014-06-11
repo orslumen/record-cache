@@ -107,16 +107,42 @@ module RecordCache
         @cacheable = false
       end
 
-      alias :visit_Arel_Nodes_Ordering :not_cacheable
+      def skip o
+      end
 
       alias :visit_Arel_Nodes_TableAlias :not_cacheable
 
       alias :visit_Arel_Nodes_Lock :not_cacheable
 
-      alias :visit_Arel_Nodes_Sum   :not_cacheable
-      alias :visit_Arel_Nodes_Max   :not_cacheable
-      alias :visit_Arel_Nodes_Avg   :not_cacheable
-      alias :visit_Arel_Nodes_Count :not_cacheable
+      alias :visit_Arel_Nodes_Sum            :not_cacheable
+      alias :visit_Arel_Nodes_Max            :not_cacheable
+      alias :visit_Arel_Nodes_Min            :not_cacheable
+      alias :visit_Arel_Nodes_Avg            :not_cacheable
+      alias :visit_Arel_Nodes_Count          :not_cacheable
+      alias :visit_Arel_Nodes_Addition       :not_cacheable
+      alias :visit_Arel_Nodes_Subtraction    :not_cacheable
+      alias :visit_Arel_Nodes_Multiplication :not_cacheable
+      alias :visit_Arel_Nodes_NamedFunction  :not_cacheable
+
+      alias :visit_Arel_Nodes_Bin :not_cacheable
+      alias :visit_Arel_Nodes_Distinct :not_cacheable
+      alias :visit_Arel_Nodes_DistinctOn :not_cacheable
+      alias :visit_Arel_Nodes_Division :not_cacheable
+      alias :visit_Arel_Nodes_Except :not_cacheable
+      alias :visit_Arel_Nodes_Exists :not_cacheable
+      alias :visit_Arel_Nodes_InfixOperation :not_cacheable
+      alias :visit_Arel_Nodes_Intersect :not_cacheable
+      alias :visit_Arel_Nodes_JoinSource :not_cacheable
+      alias :visit_Arel_Nodes_Union :not_cacheable
+      alias :visit_Arel_Nodes_UnionAll :not_cacheable
+      alias :visit_Arel_Nodes_With :not_cacheable
+      alias :visit_Arel_Nodes_WithRecursive :not_cacheable
+
+      alias :visit_Arel_Nodes_As :skip
+      alias :visit_Arel_Nodes_Ascending :skip
+      alias :visit_Arel_Nodes_Descending :skip
+      alias :visit_Arel_Nodes_False :skip
+      alias :visit_Arel_Nodes_True :skip
 
       alias :visit_Arel_Nodes_StringJoin :not_cacheable
       alias :visit_Arel_Nodes_InnerJoin  :not_cacheable
@@ -193,10 +219,6 @@ module RecordCache
         @table_name = o.name
       end
 
-      def visit_Arel_Nodes_Ordering o
-        [visit(o.expr), o.descending]
-      end
-
       def visit_Arel_Attributes_Attribute o
         o.name.to_sym
       end
@@ -205,6 +227,7 @@ module RecordCache
       alias :visit_Arel_Attributes_String    :visit_Arel_Attributes_Attribute
       alias :visit_Arel_Attributes_Time      :visit_Arel_Attributes_Attribute
       alias :visit_Arel_Attributes_Boolean   :visit_Arel_Attributes_Attribute
+      alias :visit_Arel_Attributes_Decimal   :visit_Arel_Attributes_Attribute
 
       def visit_Arel_Nodes_Equality o
         key, value = visit(o.left), visit(o.right)
@@ -248,6 +271,7 @@ module RecordCache
         o
       end
       alias :visit_Arel_Nodes_SqlLiteral :visit_Object
+      alias :visit_Arel_Nodes_BindParam :visit_Object
       alias :visit_Arel_SqlLiteral :visit_Object # This is deprecated
       alias :visit_String :visit_Object
       alias :visit_NilClass :visit_Object

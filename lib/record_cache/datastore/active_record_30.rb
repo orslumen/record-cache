@@ -100,7 +100,8 @@ module RecordCache
         @cacheable = false
       end
 
-      alias :visit_Arel_Nodes_Ordering :not_cacheable
+      def skip o
+      end
 
       alias :visit_Arel_Nodes_TableAlias :not_cacheable
 
@@ -108,6 +109,7 @@ module RecordCache
 
       alias :visit_Arel_Nodes_Sum   :not_cacheable
       alias :visit_Arel_Nodes_Max   :not_cacheable
+      alias :visit_Arel_Nodes_Min   :not_cacheable
       alias :visit_Arel_Nodes_Avg   :not_cacheable
       alias :visit_Arel_Nodes_Count :not_cacheable
 
@@ -119,6 +121,13 @@ module RecordCache
       alias :visit_Arel_Nodes_InsertStatement  :not_cacheable
       alias :visit_Arel_Nodes_UpdateStatement  :not_cacheable
 
+      alias :visit_Arel_Nodes_Except :not_cacheable
+      alias :visit_Arel_Nodes_Exists :not_cacheable
+      alias :visit_Arel_Nodes_Intersect :not_cacheable
+      alias :visit_Arel_Nodes_Union :not_cacheable
+      alias :visit_Arel_Nodes_UnionAll :not_cacheable
+
+      alias :visit_Arel_Nodes_As :skip
 
       alias :unary                              :not_cacheable
       alias :visit_Arel_Nodes_Group             :unary
@@ -198,6 +207,7 @@ module RecordCache
       alias :visit_Arel_Attributes_String    :visit_Arel_Attributes_Attribute
       alias :visit_Arel_Attributes_Time      :visit_Arel_Attributes_Attribute
       alias :visit_Arel_Attributes_Boolean   :visit_Arel_Attributes_Attribute
+      alias :visit_Arel_Attributes_Decimal   :visit_Arel_Attributes_Attribute
 
       def visit_Arel_Nodes_Equality o
         key, value = visit(o.left), visit(o.right)
