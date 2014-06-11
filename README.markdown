@@ -74,6 +74,10 @@ The following options are available:
 
     _Using shorter cache keys will improve performance as less data is sent to the Cache Stores_
 
+- <a name="unique_index" />`:unique_index`: The name(s) of the unique index column (default: `id`)
+
+    _Choose a different column as the unqiue index column in case it is not `id`_
+
 - <a name="index" />`:index`: An array of `:belongs_to` attributes to cache `:has_many` relations (default: `[]`)
 
     _`has_many` relations will lead to queries like: `SELECT * FROM permissions WHERE permission.person_id = 10`
@@ -85,6 +89,10 @@ The following options are available:
       Note: The administration overhead for the Permission IDs per Person ID leads to more calls to the Version Store and the Record
       Store. Whether or not it is profitable to add specific indexes for has_many relations will differ per use-case._
 
+- <a name="full_table" />`:full_table`: Whether the whole table should be stored as a single block in the cache (default: `false`)
+
+    _Use this option in case this table is small, is only rarely updated and needs to be retrieved as a whole in most cases.
+     For example to fill a Language or Country drop-down._
 
 #### Tests
 
