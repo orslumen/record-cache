@@ -39,6 +39,11 @@ describe RecordCache::Strategy::Base do
     Banana.record_cache[:id].send(:versioned_key, "rc/Banana/1", 2312423).should == "rc/Banana/1v2312423"
   end
 
+  it "should provide the version_opts" do
+    Apple.record_cache[:id].send(:version_opts).should == {:ttl => 300}
+    Banana.record_cache[:id].send(:version_opts).should == {}
+  end
+
   context "filter" do
     it "should apply filter on :id cache hits" do
       lambda{ @apples = Apple.where(:id => [1,2]).where(:name => "Adams Apple 1").all }.should use_cache(Apple).on(:id)
