@@ -173,14 +173,14 @@ module RecordCache
       end
       alias :visit_Arel_Nodes_Top :visit_Arel_Nodes_Limit
 
+      GROUPING_EQUALS_REGEXP = /^\W?(\w*)\W?\.\W?(\w*)\W?\s*=\s*(\d+)$/        # `calendars`.account_id = 5
+      GROUPING_IN_REGEXP = /^^\W?(\w*)\W?\.\W?(\w*)\W?\s*IN\s*\(([\d\s,]+)\)$/ # `service_instances`.`id` IN (118,80,120,82)
       def visit_Arel_Nodes_Grouping o
         return unless @cacheable
-        # `calendars`.account_id = 5
-        if @table_name && o.expr =~ /^`#{@table_name}`\.`?(\w*)`?\s*=\s*(\d+)$/
-          @cacheable = @query.where($1, $2.to_i)
-        # `service_instances`.`id` IN (118,80,120,82)
-        elsif o.expr =~ /^`#{@table_name}`\.`?(\w*)`?\s*IN\s*\(([\d\s,]+)\)$/
-          @cacheable = @query.where($1, $2.split(',').map(&:to_i))
+        if @table_name && o.expr =~ GROUPING_EQUALS_REGEXP && $1 == @table_name
+          @cacheable = @query.where($2, $3.to_i)
+        elsif @table_name && o.expr =~ GROUPING_IN_REGEXP && $1 == @table_name
+          @cacheable = @query.where($2, $3.split(',').map(&:to_i))
         else
           @cacheable = false
         end

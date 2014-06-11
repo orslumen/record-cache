@@ -93,7 +93,7 @@ module RecordCache
           def self.collate(string)
             collated = string.instance_variable_get(:@rc_collated)
             return collated if collated
-            normalized = ActiveSupport::Multibyte::Unicode.normalize(ActiveSupport::Multibyte::Unicode.tidy_bytes(string), :c).mb_chars
+            normalized = ActiveSupport::Multibyte::Unicode.normalize(ActiveSupport::Multibyte::Unicode.tidy_bytes(string || ''), :c).mb_chars
             collated = I18n.transliterate(normalized).downcase.mb_chars
             # transliterate will replace ignored/unknown chars with ? the following line replaces ? with the original character
             collated.chars.each_with_index{ |c, i| collated[i] = normalized[i] if c == '?' } if collated.index('?')
