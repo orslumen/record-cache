@@ -20,15 +20,15 @@ describe RecordCache::Strategy::UniqueIndexCache do
     end
 
     it "should write full hits to the debug log" do
-      lambda { Person.find_by_name("Fry") }.should log(:debug, %(UniqueIndexCache on 'name' hit for ids "Fry"))
+      lambda { Person.find_by_name("Fry") }.should log(:debug, %(UniqueIndexCache on 'Person.name' hit for ids "Fry"))
     end
 
     it "should write full miss to the debug log" do
-      lambda { Person.find_by_name("Chase") }.should log(:debug, %(UniqueIndexCache on 'name' miss for ids "Chase"))
+      lambda { Person.find_by_name("Chase") }.should log(:debug, %(UniqueIndexCache on 'Person.name' miss for ids "Chase"))
     end
 
     it "should write partial hits to the debug log" do
-      lambda { Person.where(:name => ["Fry", "Chase"]).all }.should log(:debug, %(UniqueIndexCache on 'name' partial hit for ids ["Fry", "Chase"]: missing ["Chase"]))
+      lambda { Person.where(:name => ["Fry", "Chase"]).all }.should log(:debug, %(UniqueIndexCache on 'Person.name' partial hit for ids ["Fry", "Chase"]: missing ["Chase"]))
     end
   end
 

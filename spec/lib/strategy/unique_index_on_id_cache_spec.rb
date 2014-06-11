@@ -20,15 +20,15 @@ describe RecordCache::Strategy::UniqueIndexCache do
     end
 
     it "should write full hits to the debug log" do
-      lambda { Apple.find(1) }.should log(:debug, %(UniqueIndexCache on 'id' hit for ids 1))
+      lambda { Apple.find(1) }.should log(:debug, %(UniqueIndexCache on 'Apple.id' hit for ids 1))
     end
 
     it "should write full miss to the debug log" do
-      lambda { Apple.find(2) }.should log(:debug, %(UniqueIndexCache on 'id' miss for ids 2))
+      lambda { Apple.find(2) }.should log(:debug, %(UniqueIndexCache on 'Apple.id' miss for ids 2))
     end
     
     it "should write partial hits to the debug log" do
-      lambda { Apple.where(:id => [1,2]).all }.should log(:debug, %(UniqueIndexCache on 'id' partial hit for ids [1, 2]: missing [2]))
+      lambda { Apple.where(:id => [1,2]).all }.should log(:debug, %(UniqueIndexCache on 'Apple.id' partial hit for ids [1, 2]: missing [2]))
     end
   end
 

@@ -58,10 +58,10 @@ Example with Index Cache: /app/models/permission.rb:
       belongs_to :person
     end
 
-Example with Request Cache: /app/models/account.rb:
+Example with Full Table Cache: /app/models/priority.rb:
 
-    class Account < ActiveRecord::Base
-      cache_records :store => :local, :key => "acc", :request_cache => true
+    class Priority < ActiveRecord::Base
+      cache_records :store => :local, :key => "prio", :full_table => true
     end
 
 The following options are available:
@@ -74,21 +74,14 @@ The following options are available:
 
     _Using shorter cache keys will improve performance as less data is sent to the Cache Stores_
 
-- <a name="request_cache" />`:request_cache`: Set to true to switch on Request Caching (default: `false`)
-
-    _In case the same Record is (always) queried multiple times during a single request from different locations,
-     e.g. from a helper and from a model, the Record can be cached in the Request Scope by setting this option to +true+.  
-     **Important**: Add to application_controller.rb: `prepend_before_filter { |c| RecordCache::Strategy::RequestCache.clear }`  
-     Note: In most cases you should be able to use an instance variable in the controller (or helper) instead._
-
 - <a name="index" />`:index`: An array of `:belongs_to` attributes to cache `:has_many` relations (default: `[]`)
 
-    _`has_many` relations will lead to queries like: `SELECT * FROM permissions WHERE permission.person_id = 10`  
+    _`has_many` relations will lead to queries like: `SELECT * FROM permissions WHERE permission.person_id = 10`
       As Record Cache only caches records by ID, this query would always hit the DB. If an index is set
       on person_id (like in the example above), Record Cache will keep track of the Permission IDs per
-      Person ID.  
+      Person ID.
       Using that information the query will be translated to: `SELECT * FROM permissions WHERE permission.id IN (14,15,...)`
-      and the permissions can be retrieved from cache.  
+      and the permissions can be retrieved from cache.
       Note: The administration overhead for the Permission IDs per Person ID leads to more calls to the Version Store and the Record
       Store. Whether or not it is profitable to add specific indexes for has_many relations will differ per use-case._
 
@@ -292,14 +285,17 @@ Now it is possible to re-use MySQL style sorting (with collation) in your own ap
 #### Version 1.3
 
 Fixed Bugs:
+
 1. "\u0000" is also used by Arel as a parameter query binding marker.
 1. https://github.com/orslumen/record-cache/issues/2: bypassing record_cache when selecting rows with lock
 
 Added:
+
 1. Release Notes ;)
-1. https://github.com/orslumen/record-cache/pull/3: Ruby 1.9 fixes, has_one support, Remove Freeze for Dalli encoding (Bryan Mundie)
+1. Ruby 1.9 fixes, has_one support, Remove Freeze for Dalli encoding (Bryan Mundie https://github.com/orslumen/record-cache/pull/3)
 1. :unique_index option
 1. :cache_all option
+1. Option :request_cache has been removed. It now defaults to caching everything during the scope of a request re-using ActiveRecord::QueryCache.
 
 And updated the gemspec file.
 
