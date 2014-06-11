@@ -12,6 +12,7 @@ module RecordCache
         @attribute = attribute
         @record_store = record_store
         @cache_key_prefix = "rc/#{options[:key] || @base.name}/"
+        @version_opts = options[:ttl] ? { :ttl => options[:ttl] } : {}
       end
 
       # Retrieve the +attribute+ for this strategy (unique per model).
@@ -55,6 +56,11 @@ module RecordCache
       # retrieve the version store (unique store for the whole application)
       def version_store
         RecordCache::Base.version_store
+      end
+
+      # should be used when calling version_store.renew(..., version_opts)
+      def version_opts
+        @version_opts
       end
 
       # retrieve the record store (store for records for this cache strategy)

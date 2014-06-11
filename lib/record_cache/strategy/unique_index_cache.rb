@@ -94,7 +94,7 @@ module RecordCache
             unless versioned_key
               # renew the key in the version store in case it was missing
               key = id_to_key_map[record.send(@attribute)]
-              versioned_key = versioned_key(key, version_store.renew(key))
+              versioned_key = versioned_key(key, version_store.renew(key, version_opts))
             end
             # store the record based on the versioned key
             record_store.write(versioned_key, Util.serialize(record))

@@ -26,10 +26,11 @@ module RecordCache
 
     # In case the version store did not have a key anymore, call this methods
     # to reset the key with a (unique) new version
-    def renew(key)
+    def renew(key, options = {})
       new_version = (Time.current.to_f * 10000).to_i
-      @store.write(key, new_version, :raw => true)
-      RecordCache::Base.logger.debug{ "Version Store: renew #{key}: nil => #{new_version}" }
+      options[:ttl] += (rand(options[:ttl] / 2) * [1, -1].sample) if options[:ttl]
+      @store.write(key, new_version, {:raw => true, :expires_in => options[:ttl]})
+      RecordCache::Base.logger.debug("Version Store: renew #{key}: nil => #{new_version}") if RecordCache::Base.logger.debug?
       new_version
     end
 
