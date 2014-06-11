@@ -83,6 +83,8 @@ module RecordCache
     # Only accepts single select queries with equality where statements
     # Rejects queries with grouping / having / offset / etc.
     class QueryVisitor < ::Arel::Visitors::Visitor
+      DESC = "DESC".freeze
+      COMMA = ",".freeze
 
       def initialize
         super()
@@ -180,11 +182,12 @@ module RecordCache
         end
       end
 
+      ORDER_BY_REGEXP = /^\s*([\w\.]*)\s*(|ASC|asc|DESC|desc)\s*$/ # people.id DESC
       def handle_order_by(order)
-        order.to_s.split(",").each do |o|
-          # simple sort order (+peope.id+ can be replaced by +id+, as joins are not allowed anyways)
-          if o.match(/^\s*([\w\.]*)\s*(|ASC|DESC|)\s*$/)
-            asc = $2 == "DESC" ? false : true
+        order.to_s.split(COMMA).each do |o|
+          # simple sort order (+people.id+ can be replaced by +id+, as joins are not allowed anyways)
+          if o.match(ORDER_BY_REGEXP)
+            asc = $2.upcase == DESC ? false : true
             @query.order_by($1.split('.').last, asc)
           else
             @cacheable = false

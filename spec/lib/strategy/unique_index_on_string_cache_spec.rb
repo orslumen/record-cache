@@ -76,6 +76,18 @@ describe RecordCache::Strategy::UniqueIndexCache do
       lambda{ Person.where(:name => "Fry").order("name ASC").all }.should hit_cache(Person).on(:name).times(1)
     end
 
+    it "should use the cache when a single id is requested together with (simple) case insensitive sort clauses" do
+      lambda{ Person.where(:name => "Fry").order("name desc").all }.should hit_cache(Person).on(:name).times(1)
+    end
+
+    it "should use the cache when a single id is requested together with (simple) sort clauses with table prefix" do
+      lambda{ Person.where(:name => "Fry").order("people.name desc").all }.should hit_cache(Person).on(:name).times(1)
+    end
+
+    it "should not use the cache when a single id is requested together with an unknown sort clause" do
+      lambda{ Person.where(:name => "Fry").order("lower(people.name) desc").all }.should_not hit_cache(Person).on(:name).times(1)
+    end
+
     it "should use the cache when a multiple ids are requested together with (simple) sort clauses" do
       lambda{ Person.where(:name => ["Fry", "Chase"]).order("name ASC").all }.should hit_cache(Person).on(:name).times(2)
     end
