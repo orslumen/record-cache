@@ -1,6 +1,6 @@
 class Store < ActiveRecord::Base
 
-  cache_records :store => :local, :key => "st", :request_cache => true
+  cache_records :store => :local, :key => "st"
 
   belongs_to :owner, :class_name => "Person"
 

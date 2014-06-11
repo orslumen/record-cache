@@ -232,10 +232,6 @@ describe RecordCache::Strategy::Base do
       lambda { @invalid_strategy.cacheable?(RecordCache::Query.new) }.should raise_error(NotImplementedError)
     end
 
-    it "should require invalidate to be implemented" do
-      lambda { @invalid_strategy.invalidate(1) }.should raise_error(NotImplementedError)
-    end
-
     it "should fetch_records to be implemented" do
       lambda { @invalid_strategy.fetch(RecordCache::Query.new) }.should raise_error(NotImplementedError)
     end

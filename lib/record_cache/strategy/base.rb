@@ -1,7 +1,7 @@
 module RecordCache
   module Strategy
     class Base
-      
+
       # Parse the options and return (an array of) instances of this strategy.
       def self.parse(base, record_store, options)
         raise NotImplementedError
@@ -13,7 +13,7 @@ module RecordCache
         @record_store = record_store
         @cache_key_prefix = "rc/#{options[:key] || @base.name}/"
       end
-      
+
       # Retrieve the +attribute+ for this strategy (unique per model).
       # May be a non-existing attribute in case a cache is not based on a single attribute.
       def attribute
@@ -41,27 +41,27 @@ module RecordCache
 
       # Handle invalidation call
       def invalidate(id)
-        raise NotImplementedError
+        version_store.increment(cache_key(id))
       end
 
       protected
-  
+
       def fetch_records(query)
         raise NotImplementedError
       end
-  
+
       # ------------------------- Utility methods ----------------------------
-  
+
       # retrieve the version store (unique store for the whole application)
       def version_store
         RecordCache::Base.version_store
       end
-      
+
       # retrieve the record store (store for records for this cache strategy)
       def record_store
         @record_store
       end
-      
+
       # find the statistics for this cache strategy
       def statistics
         @statistics ||= RecordCache::Statistics.find(@base, @attribute)
@@ -76,7 +76,7 @@ module RecordCache
       def versioned_key(cache_key, version)
         "#{cache_key}v#{version.to_s}"
       end
-  
+
     end
   end
 end

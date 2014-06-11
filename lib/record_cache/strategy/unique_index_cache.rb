@@ -1,7 +1,7 @@
 module RecordCache
   module Strategy
     class UniqueIndexCache < Base
-      
+
       # All attributes with a unique index for the given model
       def self.attributes(base)
         (@attributes ||= {})[base.name] ||= []
@@ -13,7 +13,7 @@ module RecordCache
         
         attributes = [options[:unique_index]].flatten.compact
         # add unique index for :id by default
-        attributes << :id if base.columns_hash['id'] unless base.record_cache[:id] 
+        attributes << :id if base.columns_hash['id'] unless base.record_cache[:id]
         return nil if attributes.empty?
         attributes.map do |attribute|
           type = base.columns_hash[attribute.to_s].try(:type)
@@ -50,13 +50,8 @@ module RecordCache
         end
       end
 
-      # Handle invalidation call
-      def invalidate(id)
-        version_store.delete(cache_key(@type == :integer ? id.to_i : id.to_s))
-      end
-  
       protected
-  
+
       # retrieve the record(s) with the given id(s) as an array
       def fetch_records(query)
         ids = query.where_values(@attribute, @type)
@@ -78,9 +73,9 @@ module RecordCache
         # return the array
         records
       end
-  
+
       private
-  
+
       # ---------------------------- Querying ------------------------------------
 
       # retrieve the records from the cache with the given keys
@@ -88,7 +83,7 @@ module RecordCache
         records = record_store.read_multi(*(id_to_versioned_key_map.values)).values.compact
         records.map{ |record| Util.deserialize(record) }
       end
-    
+
       # retrieve the records with the given ids from the database
       def from_db(id_to_key_map, id_to_version_key_map)
         RecordCache::Base.without_record_cache do
@@ -107,14 +102,14 @@ module RecordCache
           records
         end
       end
-  
+
       # ------------------------- Utility methods ----------------------------
-  
+
       # log cache hit/miss to debug log
       def log_id_cache_hit(ids, missing_ids)
         hit = missing_ids.empty? ? "hit" : ids.size == missing_ids.size ? "miss" : "partial hit"
         missing = missing_ids.empty? || ids.size == missing_ids.size ? "" : ": missing #{missing_ids.inspect}"
-        msg = "UniqueIndexCache on '#{@attribute}' #{hit} for ids #{ids.size == 1 ? ids.first.inspect : ids.inspect}#{missing}"
+        msg = "UniqueIndexCache on '#{@base.name}.#{@attribute}' #{hit} for ids #{ids.size == 1 ? ids.first.inspect : ids.inspect}#{missing}"
         RecordCache::Base.logger.debug{ msg }
       end
 

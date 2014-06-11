@@ -107,9 +107,6 @@ module RecordCache
       # 
       # cache strategy specific options:
       #   :index => one or more attributes (Symbols) for which the ids are cached for the value of the attribute
-      #   :request_cache => Set to true in case the exact same query is executed more than once during a single request
-      #                     If set to true somewhere, make sure to add the following to your application controller:
-      #                     prepend_before_filter { |c| RecordCache::Strategy::RequestCache.clear }
       #
       # Hints:
       #   - Dalli is a high performance pure Ruby client for accessing memcached servers, see https://github.com/mperham/dalli
