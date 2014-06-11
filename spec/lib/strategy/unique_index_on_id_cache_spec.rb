@@ -7,6 +7,20 @@ describe RecordCache::Strategy::UniqueIndexCache do
     lambda{ Apple.find(1) }.should hit_cache(Apple).on(:id).times(1)
   end
 
+  it "should accept find_by_sql queries (can not use the cache though)" do
+    apple2 = Apple.find(2) # prefill cache
+    apples = []
+    lambda{ apples = Apple.find_by_sql("select * from apples where id = 2") }.should_not use_cache(Apple).on(:id)
+    apples.should == [apple2]
+  end
+
+  it "should accept parameterized find_by_sql queries (can not use the cache though)" do
+    apple1 = Apple.find(1) # prefill cache
+    apples = []
+    lambda{ apples = Apple.find_by_sql(["select * from apples where id = ?", 1]) }.should_not use_cache(Apple).on(:id)
+    apples.should == [apple1]
+  end
+
   it "should retrieve cloned records" do
     @apple_1a = Apple.find(1)
     @apple_1b = Apple.find(1)
