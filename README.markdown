@@ -6,7 +6,7 @@ Record Cache
 
 *Cache Active Model Records in Rails 3*
 
-Record Cache transparently stores Records in a Cache Store and retrieve those Records from the store when queried (by ID) using Active Model.
+Record Cache transparently stores Records in a Cache Store to retrieve those Records from the store when queried using Active Model.
 Cache invalidation is performed automatically when Records are created, updated or destroyed. Currently only Active Record is supported, but more
 data stores may be added in the future.
 
@@ -130,9 +130,7 @@ Restrictions
 
 2. Only Active Record is supported as a data store.
 
-3. Models that do not have an `id` attribute cannot be cached.
-
-4. All servers that host Workers should be time-synchronized (otherwise the Version Store may return stale results).
+3. All servers that host Workers should be time-synchronized (otherwise the Version Store may return stale results).
 
 #### Caveats
 
@@ -302,10 +300,17 @@ Added:
 1. Release Notes ;)
 1. Ruby 1.9 fixes, has_one support, Remove Freeze for Dalli encoding (Bryan Mundie https://github.com/orslumen/record-cache/pull/3)
 1. :unique_index option
-1. :cache_all option
+1. :full_table option
 1. Option :request_cache has been removed. It now defaults to caching everything during the scope of a request re-using ActiveRecord::QueryCache.
 
 And updated the gemspec file.
 
+#### Version 1.3
+
+1. [Appraisal](https://github.com/thoughtbot/appraisal) - working with different Rails versions
+1. [Travis CI](https://travis-ci.org/orslumen/record-cache) - continuous integration service (Robin Roestenburg https://github.com/orslumen/record-cache/pull/33)
+1. Rails 3.2 support
+1. Replace request_cache in favor of ActiveRecord::QueryCache (Lawrence Pit https://github.com/orslumen/record-cache/pull/11)
+
 ----
-Copyright (c) 2011 Orslumen, released under the MIT license
+Copyright (c) 2011-2014 Orslumen, released under the MIT license

@@ -7,5 +7,5 @@ appraise 'rails-31' do
 end
 
 appraise 'rails-32' do
-  gem 'rails', '3.2.18'
+  gem 'rails', '3.2.19'
 end

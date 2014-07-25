@@ -31,15 +31,16 @@ module RecordCache
           arel = sql.is_a?(String) ? sql.instance_variable_get(:@arel) : sql
 
           sanitized_sql = sanitize_sql(sql)
-          sanitized_sql = connection.visitor.accept(sanitized_sql.ast) if sanitized_sql.respond_to?(:ast)
+          sanitized_sql = connection.to_sql(sanitized_sql, binds) if sanitized_sql.respond_to?(:ast)
 
-          records = if connection.instance_variable_get(:@query_cache_enabled)
+          records = if connection.query_cache_enabled
                       query_cache = connection.instance_variable_get(:@query_cache)
                       query_cache["rc/#{sanitized_sql}"][binds] ||= try_record_cache(arel, sanitized_sql, binds)
                     else
                       try_record_cache(arel, sanitized_sql, binds)
                     end
           records.collect! { |record| instantiate(record) } if records[0].is_a?(Hash)
+
           records
         end
 

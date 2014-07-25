@@ -179,6 +179,12 @@ describe RecordCache::Strategy::UniqueIndexCache do
       lambda{ @homeless_apple = Apple.find(1) }.should miss_cache(Apple).on(:id).times(1)
       @homeless_apple.store_id.should == nil
     end
+
+    it "should reload from the DB after invalidation" do
+      @apple = Apple.last
+      Apple.record_cache.invalidate(@apple.id)
+      lambda{ Apple.find(@apple.id) }.should miss_cache(Apple).on(:id).times(1)
+    end
   end
   
 end
