@@ -63,9 +63,7 @@ module RecordCache
         # retrieve the ids from the DB if the result was not fresh
         ids = fetch_ids_from_db(versioned_key, value) unless ids
         # use the IdCache to retrieve the records based on the ids
-        records = @base.record_cache[:id].send(:fetch_records, ::RecordCache::Query.new({:id => ids}))
-        records = records[0, query.limit] unless query.limit.nil? || records.nil?
-        records
+        @base.record_cache[:id].send(:fetch_records, ::RecordCache::Query.new({:id => ids}))
       end
 
       private
