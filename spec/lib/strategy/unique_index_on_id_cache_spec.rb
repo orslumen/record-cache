@@ -93,6 +93,10 @@ describe RecordCache::Strategy::UniqueIndexCache do
     it "should use the cache when a multiple ids are requested together with (simple) sort clauses" do
       lambda{ Apple.where(:id => [1,2]).order("name ASC").all }.should hit_cache(Apple).on(:id).times(2)
     end
+
+    it "should not use the cache when a join clause is used" do
+      lambda{ Apple.where(:id => [1,2]).joins(:store).all }.should_not use_cache(Apple).on(:id)
+    end
   end
   
   context "record_change" do

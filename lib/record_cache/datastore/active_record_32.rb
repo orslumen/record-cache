@@ -133,11 +133,15 @@ module RecordCache
       alias :visit_Arel_Nodes_Exists :not_cacheable
       alias :visit_Arel_Nodes_InfixOperation :not_cacheable
       alias :visit_Arel_Nodes_Intersect :not_cacheable
-      alias :visit_Arel_Nodes_JoinSource :not_cacheable
       alias :visit_Arel_Nodes_Union :not_cacheable
       alias :visit_Arel_Nodes_UnionAll :not_cacheable
       alias :visit_Arel_Nodes_With :not_cacheable
       alias :visit_Arel_Nodes_WithRecursive :not_cacheable
+
+      def visit_Arel_Nodes_JoinSource o
+        # left and right are array, but using blank as it also works for nil
+        @cacheable = o.left.blank? || o.right.blank?
+      end
 
       alias :visit_Arel_Nodes_CurrentRow :not_cacheable
       alias :visit_Arel_Nodes_Extract :not_cacheable
@@ -201,6 +205,7 @@ module RecordCache
         @cacheable = false unless o.groups.empty?
         visit o.froms  if @cacheable
         visit o.wheres if @cacheable
+        visit o.source if @cacheable
         # skip o.projections
       end
 
