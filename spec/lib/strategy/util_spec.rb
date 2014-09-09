@@ -80,6 +80,13 @@ describe RecordCache::Strategy::Util do
       apples.map(&:id).sort.should == [8,9]
     end
 
+    it "should filter with more than 2 and conditions" do
+      # this construction leads to a arel object with 3 Equality Nodes within a single And Node
+      apples = Apple.where(:store_id => [1,2]).where(:store_id => 1, :person_id => nil).all
+      apples.size.should == 2
+      apples.map(&:id).sort.should == [1,2]
+    end
+
   end
 
   context "sort" do
