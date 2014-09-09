@@ -35,7 +35,7 @@ module RecordCache
         elsif action == :create
           add_to_index(record.send(@attribute), record.id)
         else
-          index_change = record.previous_changes[@attribute.to_s]
+          index_change = record.previous_changes[@attribute.to_s] || record.previous_changes[@attribute]
           return unless index_change
           remove_from_index(index_change[0], record.id)
           add_to_index(index_change[1], record.id)
