@@ -59,7 +59,7 @@ describe RecordCache::VersionStore do
   context "increment" do
 
     it "should write to the debug log" do
-      lambda { @version_store.increment("key1") }.should log(:debug, %(increment is deprecated, use renew instead. Called from: /home/mathijs/dev/record-cache/spec/support/matchers/log.rb:17:in `call'))
+      lambda { @version_store.increment("key1") }.should log(:debug, /increment is deprecated, use renew instead. Called from: .*log\.rb:17:in `call'/)
     end
 
   end
