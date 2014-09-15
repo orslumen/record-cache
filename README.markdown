@@ -39,6 +39,8 @@ In /config/initializers/record_cache.rb:
     # The :shared store is used to share Records between multiple Workers
     RecordCache::Base.register_store(:shared, Rails.cache)
 
+    # Different logger
+    # RecordCache::Base.logger = Logger.new(STDOUT)
 
 #### Models
 
@@ -305,12 +307,13 @@ Added:
 
 And updated the gemspec file.
 
-#### Version 1.3
+#### Version 1.4
 
 1. [Appraisal](https://github.com/thoughtbot/appraisal) - working with different Rails versions
 1. [Travis CI](https://travis-ci.org/orslumen/record-cache) - continuous integration service (Robin Roestenburg https://github.com/orslumen/record-cache/pull/33)
-1. Rails 3.2 support
+1. Rails 3.1 and 3.2 support
 1. Replace request_cache in favor of ActiveRecord::QueryCache (Lawrence Pit https://github.com/orslumen/record-cache/pull/11)
+1. Possibility to set a custom logger
 
 ----
 Copyright (c) 2011-2014 Orslumen, released under the MIT license

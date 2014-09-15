@@ -17,7 +17,16 @@ module RecordCache
 
       # The logger instance (Rails.logger if present)
       def logger
-        @logger ||= defined?(::Rails) ? ::Rails.logger : ::ActiveRecord::Base.logger
+        @logger ||= (rails_logger || ::ActiveRecord::Base.logger)
+      end
+
+      # Provide a different logger for Record Cache related information
+      def logger=(logger)
+        @logger = logger
+      end
+
+      def rails_logger
+        defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
       end
 
       # Set the ActiveSupport::Cache::Store instance that contains the current record(group) versions.
