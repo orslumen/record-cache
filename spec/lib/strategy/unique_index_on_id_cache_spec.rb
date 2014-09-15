@@ -189,6 +189,7 @@ describe RecordCache::Strategy::UniqueIndexCache do
       Apple.record_cache.invalidate(@apple.id)
       lambda{ Apple.find(@apple.id) }.should miss_cache(Apple).on(:id).times(1)
     end
+
   end
   
 end

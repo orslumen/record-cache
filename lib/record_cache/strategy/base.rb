@@ -10,7 +10,7 @@ module RecordCache
       def initialize(base, attribute, record_store, options)
         @base = base
         @attribute = attribute
-        @record_store = record_store
+        @record_store = with_multi_support(record_store)
         @cache_key_prefix = "rc/#{options[:key] || @base.name}/"
         @version_opts = options[:ttl] ? { :ttl => options[:ttl] } : {}
       end
@@ -81,6 +81,18 @@ module RecordCache
       # retrieve the versioned record key, e.g. rc/person/14v1
       def versioned_key(cache_key, version)
         "#{cache_key}v#{version.to_s}"
+      end
+
+      private
+
+      # add default implementation for multi support to perform multiple cache calls in a pipelined fashion
+      def with_multi_support(cache_store)
+        unless cache_store.respond_to?(:multi)
+          cache_store.send(:define_singleton_method, :multi) do |&block|
+            block.call
+          end
+        end
+        cache_store
       end
 
     end

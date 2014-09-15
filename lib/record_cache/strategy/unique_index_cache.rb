@@ -86,20 +86,27 @@ module RecordCache
 
       # retrieve the records with the given ids from the database
       def from_db(id_to_key_map, id_to_version_key_map)
+        # skip record cache itself
         RecordCache::Base.without_record_cache do
-          # retrieve the records from the database
-          records = @base.where(@attribute => id_to_key_map.keys).to_a
-          records.each do |record|
-            versioned_key = id_to_version_key_map[record.send(@attribute)]
-            unless versioned_key
-              # renew the key in the version store in case it was missing
-              key = id_to_key_map[record.send(@attribute)]
-              versioned_key = versioned_key(key, version_store.renew(key, version_opts))
+          # set version store in multi-mode
+          RecordCache::Base.version_store.multi do
+            # set record store in multi-mode
+            record_store.multi do
+              # retrieve the records from the database
+              records = @base.where(@attribute => id_to_key_map.keys).to_a
+              records.each do |record|
+                versioned_key = id_to_version_key_map[record.send(@attribute)]
+                unless versioned_key
+                  # renew the key in the version store in case it was missing
+                  key = id_to_key_map[record.send(@attribute)]
+                  versioned_key = versioned_key(key, version_store.renew(key, version_opts))
+                end
+                # store the record based on the versioned key
+                record_store.write(versioned_key, Util.serialize(record))
+              end
+              records
             end
-            # store the record based on the versioned key
-            record_store.write(versioned_key, Util.serialize(record))
           end
-          records
         end
       end
 
