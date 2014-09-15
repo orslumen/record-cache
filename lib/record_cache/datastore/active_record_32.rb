@@ -337,10 +337,12 @@ module RecordCache
               # get all attributes that contian a unique index for this model
               unique_index_attributes = RecordCache::Strategy::UniqueIndexCache.attributes(self)
               # go straight to SQL result (without instantiating records) for optimal performance
-              connection.execute(select(unique_index_attributes.map(&:to_s).join(',')).to_sql).each do |row|
-                # invalidate the unique index for all attributes
-                unique_index_attributes.each_with_index do |attribute, index|
-                  record_cache.invalidate(attribute, (row.is_a?(Hash) ? row[attribute.to_s] : row[index]) )
+              RecordCache::Base.version_store.multi do
+                connection.execute(select(unique_index_attributes.map(&:to_s).join(',')).to_sql).each do |row|
+                  # invalidate the unique index for all attributes
+                  unique_index_attributes.each_with_index do |attribute, index|
+                    record_cache.invalidate(attribute, (row.is_a?(Hash) ? row[attribute.to_s] : row[index]) )
+                  end
                 end
               end
             end

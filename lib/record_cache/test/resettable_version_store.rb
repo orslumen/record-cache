@@ -11,7 +11,6 @@ module RecordCache
         base.extend ClassMethods
         base.send(:include, InstanceMethods)
         base.instance_eval do
-          alias_method_chain :increment, :reset
           alias_method_chain :renew, :reset
         end
       end
@@ -20,11 +19,6 @@ module RecordCache
       end
 
       module InstanceMethods
-
-        def increment_with_reset(key)
-          updated_version_keys << key
-          increment_without_reset(key)
-        end
 
         def renew_with_reset(key, opts = {})
           updated_version_keys << key

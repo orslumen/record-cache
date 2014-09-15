@@ -90,25 +90,26 @@ module RecordCache
   
       # add one record(id) to the index with the given value
       def add_to_index(value, id)
-        increment_version(value.to_i) { |ids| ids << id } if value
+        renew_version(value.to_i) { |ids| ids << id } if value
       end
 
       # remove one record(id) from the index with the given value
       def remove_from_index(value, id)
-        increment_version(value.to_i) { |ids| ids.delete(id) } if value
+        renew_version(value.to_i) { |ids| ids.delete(id) } if value
       end
 
-      # increment the version store and update the local store
-      def increment_version(value, &block)
+      # renew the version store and update the local store
+      def renew_version(value, &block)
         # retrieve local version and increment version store
         key = cache_key(value)
-        version = version_store.increment(key)
+        old_version = version_store.current(key)
+        new_version = version_store.renew(key, version_opts)
         # try to update the ids list based on the last version
-        ids = fetch_ids_from_cache(versioned_key(key, version - 1))
+        ids = fetch_ids_from_cache(versioned_key(key, old_version))
         if ids
           ids = Array.new(ids)
           yield ids
-          record_store.write(versioned_key(key, version), ids)
+          record_store.write(versioned_key(key, new_version), ids)
         end
       end
   

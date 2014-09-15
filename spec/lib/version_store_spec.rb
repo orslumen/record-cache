@@ -9,7 +9,7 @@ describe RecordCache::VersionStore do
   end
   
   it "should only accept ActiveSupport cache stores" do
-    lambda { RecordCache::VersionStore.new(Object.new) }.should raise_error("Store Object must respond to increment")
+    lambda { RecordCache::VersionStore.new(Object.new) }.should raise_error("Store Object must respond to write")
   end
 
   context "current" do
@@ -55,30 +55,13 @@ describe RecordCache::VersionStore do
     end
   end
 
+  # deprecated
   context "increment" do
-    it "should increment the version" do
-      @version_store.current("key1").should == 1000
-      @version_store.increment("key1")
-      @version_store.current("key1").should == 1001
-    end
-
-    it "should renew the version on increment for unknown keys" do
-      # do not use unknown_key as the version store retains the value after this spec
-      @version_store.current("unknown_key").should == nil
-      @version_store.renew("unknown_key")
-      @version_store.current("unknown_key").should_not == nil
-    end
 
     it "should write to the debug log" do
-      lambda { @version_store.increment("key1") }.should log(:debug, %(Version Store: incremented key1: 1000 => 1001))
+      lambda { @version_store.increment("key1") }.should log(:debug, %(increment is deprecated, use renew instead. Called from: /home/mathijs/dev/record-cache/spec/support/matchers/log.rb:17:in `call'))
     end
 
-    it "should write to the debug log when initial option is accepted" do
-      stub(@version_store.store).increment do |key, one, options|
-        options[:initial]
-      end
-      lambda { @version_store.increment("unknown_key") }.should log(:debug, /Version Store: renew unknown_key: nil => \d+/)
-    end
   end
 
   context "delete" do

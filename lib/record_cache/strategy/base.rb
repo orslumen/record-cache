@@ -42,7 +42,7 @@ module RecordCache
 
       # Handle invalidation call
       def invalidate(id)
-        version_store.increment(cache_key(id))
+        version_store.renew(cache_key(id), version_opts)
       end
 
       protected

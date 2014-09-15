@@ -45,7 +45,7 @@ module RecordCache
           version_store.delete(key)
         else
           # update the version store and add the record to the cache
-          new_version = version_store.increment(key)
+          new_version = version_store.renew(key, version_opts)
           record_store.write(versioned_key(key, new_version), Util.serialize(record))
         end
       end
