@@ -14,6 +14,7 @@ module RecordCache
         attributes = [options[:unique_index]].flatten.compact
         # add unique index for :id by default
         attributes << :id if base.columns_hash['id'] unless base.record_cache[:id]
+        attributes.uniq! # in development mode, do not keep adding 'id' to the list of unique index attributes
         return nil if attributes.empty?
         attributes.map do |attribute|
           type = base.columns_hash[attribute.to_s].try(:type)
