@@ -17,7 +17,11 @@ module RecordCache
         # deserialize a cached record
         def deserialize(serialized)
           record = serialized[CLASS_KEY].constantize.allocate
-          record.init_with('attributes' => serialized[ATTRIBUTES_KEY])
+          attributes = serialized[ATTRIBUTES_KEY]
+          record.class.serialized_attributes.keys.each do |attribute|
+            attributes[attribute] = attributes[attribute].unserialize if attributes[attribute].respond_to?(:unserialize)
+          end
+          record.init_with('attributes' => attributes)
           record
         end
 

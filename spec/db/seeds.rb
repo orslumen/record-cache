@@ -14,7 +14,7 @@ ActiveRecord::Schema.define :version => 1 do
 
   @adam_apples_address = Address.create!(:name => "101 1st street", :store => @adam_apples)
   @blue_fruits_address = Address.create!(:name => "102 1st street", :store => @blue_fruits)
-  @cris_bananas_address = Address.create!(:name => "103 1st street", :store => @cris_bananas)
+  @cris_bananas_address = Address.create!(:name => "103 1st street", :store => @cris_bananas, :location => {latitue: 27.175015, longitude: 78.042155, dms_lat: %(27° 10' 30.0540" N), dms_long: %(78° 2' 31.7580" E)})
 
   @fry = Person.create!(:name => "Fry", :birthday => Date.civil(1985,01,20), :height => 1.69)
   @chase = Person.create!(:name => "Chase", :birthday => Date.civil(1970,07,03), :height => 1.91)

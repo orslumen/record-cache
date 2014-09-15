@@ -237,6 +237,16 @@ describe RecordCache::Strategy::IndexCache do
       lambda{ @address_2 = Address.where(:store_id => 2).first }.should hit_cache(Address).on(:store_id).times(1)
       @address_2.should be_nil
     end
+
+    # see https://github.com/orslumen/record-cache/issues/19
+    it "should work with serialized object" do
+      address = Address.find(3) # not from cache
+      address = Address.find(3) # from cache
+      address.location[:latitue].should == 27.175015
+      address.location[:dms_lat].should == %(27\u00B0 10' 30.0540" N)
+      address.name = 'updated name'
+      address.save!
+    end
   end
 
 end
