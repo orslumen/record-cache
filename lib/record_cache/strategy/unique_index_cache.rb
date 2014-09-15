@@ -83,6 +83,10 @@ module RecordCache
       def from_cache(id_to_versioned_key_map)
         records = record_store.read_multi(*(id_to_versioned_key_map.values)).values.compact
         records.map{ |record| Util.deserialize(record) }
+        records.map do |record|
+          record = Util.deserialize(record)
+          record.becomes(self.instance_variable_get('@base'))
+        end
       end
 
       # retrieve the records with the given ids from the database

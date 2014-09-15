@@ -127,6 +127,10 @@ module RecordCache
           @rc_dispatcher = RecordCache::Dispatcher.new(self) 
           # Callback for Data Store specific initialization
           record_cache_init
+
+          class << self
+            alias_method_chain :inherited, :record_cache
+          end
         end
         # parse the requested strategies from the given options
         @rc_dispatcher.parse(options)
@@ -134,12 +138,21 @@ module RecordCache
 
       # Returns true if record cache is defined and active for this class
       def record_cache?
-        record_cache && RecordCache::Base.status == RecordCache::ENABLED
+        record_cache && record_cache.instance_variable_get('@base') == self && RecordCache::Base.status == RecordCache::ENABLED
       end
 
       # Returns the RecordCache (class) instance
       def record_cache
         @rc_dispatcher
+      end
+
+      def inherited_with_record_cache(subclass)
+        class << subclass
+          def record_cache
+            self.superclass.record_cache
+          end
+        end
+        inherited_without_record_cache(subclass)
       end
     end
 
