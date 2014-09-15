@@ -321,7 +321,7 @@ module RecordCache
           return nil unless sub_select.arel.constraints.count == 1
           constraint = sub_select.arel.constraints.first
           return constraint if constraint.is_a?(::Arel::Nodes::In) # directly an IN clause
-          return nil unless constraint.children.count == 1
+          return nil unless constraint.respond_to?(:children) && constraint.children.count == 1
           constraint = constraint.children.first
           return constraint if constraint.is_a?(::Arel::Nodes::In) # AND with IN clause
           nil
