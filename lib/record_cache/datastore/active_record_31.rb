@@ -317,20 +317,41 @@ module RecordCache
       end
 
       module InstanceMethods
+        def __find_in_clause(sub_select)
+          return nil unless sub_select.arel.constraints.count == 1
+          constraint = sub_select.arel.constraints.first
+          return constraint if constraint.is_a?(::Arel::Nodes::In) # directly an IN clause
+          return nil unless constraint.children.count == 1
+          constraint = constraint.children.first
+          return constraint if constraint.is_a?(::Arel::Nodes::In) # AND with IN clause
+          nil
+        end
+
         def update_all_with_record_cache(updates, conditions = nil, options = {})
           result = update_all_without_record_cache(updates, conditions, options)
 
           if record_cache?
             # when this condition is met, the arel.update method will be called on the current scope, see ActiveRecord::Relation#update_all
             unless conditions || options.present? || @limit_value.present? != @order_values.present?
-              # get all attributes that contian a unique index for this model
+              # get all attributes that contain a unique index for this model
               unique_index_attributes = RecordCache::Strategy::UniqueIndexCache.attributes(self)
               # go straight to SQL result (without instantiating records) for optimal performance
               RecordCache::Base.version_store.multi do
-                connection.execute(select(unique_index_attributes.map(&:to_s).join(',')).to_sql).each do |row|
-                  # invalidate the unique index for all attributes
-                  unique_index_attributes.each_with_index do |attribute, index|
-                    record_cache.invalidate(attribute, (row.is_a?(Hash) ? row[attribute.to_s] : row[index]) )
+                sub_select = select(unique_index_attributes.map(&:to_s).join(','))
+                in_clause = __find_in_clause(sub_select)
+                if unique_index_attributes.size == 1 && in_clause &&
+                  in_clause.left.try(:name).to_s == unique_index_attributes.first.to_s
+                  # common case where the unique index is the (only) constraint on the query: SELECT id FROM people WHERE id in (...)
+                  attribute = unique_index_attributes.first
+                  in_clause.right.each do |value|
+                    record_cache.invalidate(attribute, value)
+                  end
+                else
+                  connection.execute(sub_select.to_sql).each do |row|
+                    # invalidate the unique index for all attributes
+                    unique_index_attributes.each_with_index do |attribute, index|
+                      record_cache.invalidate(attribute, (row.is_a?(Hash) ? row[attribute.to_s] : row[index]))
+                    end
                   end
                 end
               end
