@@ -51,3 +51,14 @@ module RecordCache
     end
   end
 end
+
+# Exposes Dalli's +multi+ functionality in ActiveSupport::Cache implementation of Dalli
+module ActiveSupport
+  module Cache
+    class DalliStore
+      def multi(&block)
+        dalli.multi(&block)
+      end
+    end
+  end
+end if defined?(::ActiveSupport::Cache::DalliStore)
