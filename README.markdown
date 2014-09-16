@@ -300,12 +300,6 @@ Added:
 1. Ruby 1.9 fixes, has_one support, Remove Freeze for Dalli encoding (Bryan Mundie https://github.com/orslumen/record-cache/pull/3)
 1. :unique_index option
 1. :full_table option
-1. Option :request_cache has been removed. It now defaults to caching everything during the scope of a request re-using ActiveRecord::QueryCache.
-
-And updated the gemspec file.
-
-#### Version 1.4
-
 1. [Appraisal](https://github.com/thoughtbot/appraisal) - working with different Rails versions
 1. [Travis CI](https://travis-ci.org/orslumen/record-cache) - continuous integration service (Robin Roestenburg https://github.com/orslumen/record-cache/pull/33)
 1. Rails 3.1 and 3.2 support
