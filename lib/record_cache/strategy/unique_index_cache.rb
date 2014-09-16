@@ -84,7 +84,8 @@ module RecordCache
         records = record_store.read_multi(*(id_to_versioned_key_map.values)).values.compact
         records.map do |record|
           record = Util.deserialize(record)
-          record.becomes(self.instance_variable_get('@base'))
+          record.becomes(self.instance_variable_get('@base')) unless record.class == self.instance_variable_get('@base')
+          record
         end
       end
 
