@@ -8,8 +8,9 @@ Gem::Specification.new do |s|
   s.authors     = ['Orslumen']
   s.email       = 'orslumen@gmail.com'
   s.homepage    = 'https://github.com/orslumen/record-cache'
-  s.summary     = "Record Cache v#{RecordCache::Version::STRING} transparantly stores Records in a Cache Store and retrieve those Records from the store when queried (by ID) using Active Model."
+  s.summary     = "Record Cache v#{RecordCache::Version::STRING} transparantly stores Records in a Cache Store and retrieve those Records from the store when queried using Active Model."
   s.description = 'Record Cache for Rails 3'
+  s.license     = 'MIT'
 
   s.files            = `git ls-files -- lib/*`.split("\n")
   s.test_files       = `git ls-files -- spec/*`.split("\n")
