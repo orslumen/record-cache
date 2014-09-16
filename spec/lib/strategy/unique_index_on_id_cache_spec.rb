@@ -134,7 +134,7 @@ describe RecordCache::Strategy::UniqueIndexCache do
       lambda{ @apples = Apple.where(:id => [1, 2]).order('id ASC').all }.should hit_cache(Apple).on(:id).times(2)
       @apples.map(&:name).should == ["Applejuice", "Adams Apple 2"]
     end
-    
+
   end
   
   context "invalidate" do
@@ -191,5 +191,127 @@ describe RecordCache::Strategy::UniqueIndexCache do
     end
 
   end
-  
+
+  context "transactions" do
+
+    it "should update the cache once the transaction is committed" do
+      apple1 = Apple.find(1)
+      ActiveRecord::Base.transaction do
+        apple1.name = "Committed Apple"
+        apple1.save!
+
+        # do not use the cache within a transaction
+        lambda{ apple1 = Apple.find(1) }.should_not use_cache(Apple).on(:id)
+        apple1.name.should == "Committed Apple"
+      end
+
+      # use the cache again once the transaction is over
+      lambda{ apple1 = Apple.find(1) }.should use_cache(Apple).on(:id)
+      apple1.name.should == "Committed Apple"
+    end
+
+    it "should not update the cache when the transaction is rolled back" do
+      apple1 = Apple.find(1)
+      ActiveRecord::Base.transaction do
+        apple1.name = "Rollback Apple"
+        apple1.save!
+
+        # test to make sure appl1 is not retrieved 1:1 from the cache
+        apple1.name = "Not saved apple"
+
+        # do not use the cache within a transaction
+        lambda{ apple1 = Apple.find(1) }.should_not use_cache(Apple).on(:id)
+        apple1.name.should == "Rollback Apple"
+
+        raise ActiveRecord::Rollback, "oops"
+      end
+
+      # use the cache again once the transaction is over
+      lambda{ apple1 = Apple.find(1) }.should use_cache(Apple).on(:id)
+      apple1.name.should == "Adams Apple 1"
+    end
+
+  end
+
+  context "nested transactions" do
+
+    it "should update the cache in case both transactions are committed" do
+      apple1, apple2 = nil
+
+      ActiveRecord::Base.transaction do
+        apple1 = Apple.find(1)
+        apple1.name = "Committed Apple 1"
+        apple1.save!
+
+        ActiveRecord::Base.transaction(requires_new: true) do
+          apple2 = Apple.find(2)
+          apple2.name = "Committed Apple 2"
+          apple2.save!
+        end
+      end
+
+      lambda{ apple1 = Apple.find(1) }.should use_cache(Apple).on(:id)
+      apple1.name.should == "Committed Apple 1"
+
+      lambda{ apple2 = Apple.find(2) }.should use_cache(Apple).on(:id)
+      apple2.name.should == "Committed Apple 2"
+    end
+
+    [:implicitly, :explicitly].each do |inner_rollback_explicit_or_implicit|
+      it "should not update the cache in case both transactions are #{inner_rollback_explicit_or_implicit} rolled back" do
+        pending "nested transaction support by sqlite3"
+        apple1, apple2 = nil
+
+        ActiveRecord::Base.transaction do
+          apple1 = Apple.find(1)
+          apple1.name = "Rollback Apple 1"
+          apple1.save!
+          apple1.name = "Saved Apple 1"
+
+          ActiveRecord::Base.transaction(requires_new: true) do
+            apple2 = Apple.find(2)
+            apple2.name = "Rollback Apple 2"
+            apple2.save!
+            apple1.name = "Saved Apple 2"
+
+            raise ActiveRecord::Rollback, "oops" if inner_rollback_explicit_or_implicit == :explicitly
+          end
+
+          raise ActiveRecord::Rollback, "oops"
+        end
+
+        lambda{ apple1 = Apple.find(1) }.should use_cache(Apple).on(:id)
+        apple1.name.should == "Adams Apple 1"
+
+        lambda{ apple2 = Apple.find(2) }.should use_cache(Apple).on(:id)
+        apple2.name.should == "Adams Apple 2"
+      end
+    end
+
+    it "should not update the cache for the rolled back inner transaction" do
+      pending "rails calls after_commit on records that are in a transaction that is rolled back"
+
+      apple1, apple2 = nil
+
+      ActiveRecord::Base.transaction do
+        apple1 = Apple.find(1)
+        apple1.name = "Committed Apple 1"
+        apple1.save!
+
+        ActiveRecord::Base.transaction(requires_new: true) do
+          apple2 = Apple.find(2)
+          apple2.name = "Rollback Apple 2"
+          apple2.save!
+
+          raise ActiveRecord::Rollback, "oops"
+        end
+      end
+
+      lambda{ apple1 = Apple.find(1) }.should use_cache(Apple).on(:id)
+      apple1.name.should == "Committed Apple 1"
+
+      lambda{ apple2 = Apple.find(2) }.should use_cache(Apple).on(:id)
+      apple2.name.should == "Adams Apple 2"
+    end
+  end
 end

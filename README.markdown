@@ -139,24 +139,21 @@ Restrictions
 1. Record Cache sorting mimics the MySQL sort order being case-insensitive and using collation.
    _If you need a different sort order, check out the code in `<gem>/lib/record_cache/strategy/util.rb`._
 
-2. Using `update_all` to modify attributes used in the [:index option](#index) will lead to stale results.
+1. Using `update_all` to modify attributes used in the [:index option](#index) will lead to stale results.
 
-3. When using `<model>.transaction do ... end`, make sure wrap it in `RecordCache::Base.without_record_cache do ... end`.
-   During the transaction the after_commit callbacks are delayed until the whole transaction completed successfully. As
-   a result the records fetched from the Record Cache within that transaction will not contain the uncommitted changes yet.
-
-4. (Uncommon) If you have a model (A) with a `has_many :autosave => true` relation to another model (B) that defines a
+1. (Uncommon) If you have a model (A) with a `has_many :autosave => true` relation to another model (B) that defines a
    `:counter_cache` back to model A, the `<model B>_count` attribute will contain stale results. To solve this, add an
    after_save hook to model A and update the `<model B>_count` attribute there in case the `has_many` relation was loaded.
 
-5. When using Dalli as a MemCache client, multi_read actions may be 50x slower than normal reads,
-   @see https://github.com/mperham/dalli/issues/106
-   If the same applies to your environment, add the following at the top of /config/initializers/record_cache.rb:
-     `RecordCache::MultiRead.disable(ActiveSupport::Cache::DalliStore)`
-
-6. The combination of Mongrel (Rack) and the Dalli `:threadsafe => false` option will lead to the following errors in
+1. The combination of Mongrel (Rack) and the Dalli `:threadsafe => false` option will lead to the following errors in
    your log file: `undefined method `constantize’ for 0:Fixnum`. This is because Mongrel creates multiple threads.
    To overcome this, set thread_save to true, or consider using a different webserver like Unicorn.
+
+1. Nested transactions: When using nested transactions, Rails will also call the after_commit hook of records that were
+   updated within a nested transaction that was rolled back. This will cause the cache to contain updates that are not
+   in the database.
+   To overcome this, skip using nested transactions, or disable record cache and manually invalidate all records that were
+   possibly updated within the nested transactions.
 
 Explain
 -------
@@ -314,6 +311,7 @@ And updated the gemspec file.
 1. Rails 3.1 and 3.2 support
 1. Replace request_cache in favor of ActiveRecord::QueryCache (Lawrence Pit https://github.com/orslumen/record-cache/pull/11)
 1. Possibility to set a custom logger
+1. Select queries within a transaction will automatically bypass the cache
 
 ----
 Copyright (c) 2011-2014 Orslumen, released under the MIT license

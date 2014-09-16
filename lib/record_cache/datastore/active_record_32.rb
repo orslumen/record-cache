@@ -14,6 +14,8 @@ module RecordCache
       end
 
       module ClassMethods
+        # the tests are always run within a transaction, so the threshold is one higher
+        RC_TRANSACTIONS_THRESHOLD = ENV['RAILS_ENV'] == 'test' ? 1 : 0
 
         # add cache invalidation hooks on initialization
         def record_cache_init
@@ -36,6 +38,8 @@ module RecordCache
           records = if connection.query_cache_enabled
                       query_cache = connection.instance_variable_get(:@query_cache)
                       query_cache["rc/#{sanitized_sql}"][binds] ||= try_record_cache(arel, sanitized_sql, binds)
+                    elsif connection.open_transactions > RC_TRANSACTIONS_THRESHOLD
+                      connection.send(:select, sanitized_sql, "#{name} Load", binds)
                     else
                       try_record_cache(arel, sanitized_sql, binds)
                     end
