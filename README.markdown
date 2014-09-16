@@ -312,6 +312,11 @@ And updated the gemspec file.
 1. Replace request_cache in favor of ActiveRecord::QueryCache (Lawrence Pit https://github.com/orslumen/record-cache/pull/11)
 1. Possibility to set a custom logger
 1. Select queries within a transaction will automatically bypass the cache
+1. No more increment calls to the Version Store (only set and delete)
+1. Support for Dalli's +multi+ method to pipeline multiple cache writes (when storing multiple fresh records in the cache, or outdating multiple records after update_all)
+1. Updated tests to RSpec 3
+1. Fix deserialization of records with serialized attributes, see https://github.com/orslumen/record-cache/issues/19
+1. Ruby 2 fix
 
 ----
 Copyright (c) 2011-2014 Orslumen, released under the MIT license
