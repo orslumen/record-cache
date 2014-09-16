@@ -19,10 +19,10 @@ describe "QueryCache" do
 
   it "should retrieve a record from the QueryCache" do
     ActiveRecord::Base.cache do
-      lambda{ Store.find(1) }.should miss_cache(Store).on(:id).times(1)
-      second_lookup = lambda{ Store.find(1) }
-      second_lookup.should miss_cache(Store).times(0)
-      second_lookup.should hit_cache(Store).on(:id).times(0)
+      expect{ Store.find(1) }.to miss_cache(Store).on(:id).times(1)
+      second_lookup = expect{ Store.find(1) }
+      second_lookup.to miss_cache(Store).times(0)
+      second_lookup.to hit_cache(Store).on(:id).times(0)
     end
   end
 
@@ -30,8 +30,8 @@ describe "QueryCache" do
     ActiveRecord::Base.cache do
       @store_1 = Store.find(1)
       @store_2 = Store.find(1)
-      @store_1.should == @store_2
-      @store_1.object_id.should == @store_2.object_id
+      expect(@store_1).to eq(@store_2)
+      expect(@store_1.object_id).to eq(@store_2.object_id)
     end
   end
 
@@ -39,34 +39,34 @@ describe "QueryCache" do
     it "should clear the query cache completely when a record is created" do
       ActiveRecord::Base.cache do
         init_query_cache
-        lambda{ Store.find(2) }.should hit_cache(Store).times(0)
-        lambda{ Apple.find(1) }.should hit_cache(Apple).times(0)
+        expect{ Store.find(2) }.to hit_cache(Store).times(0)
+        expect{ Apple.find(1) }.to hit_cache(Apple).times(0)
         Store.create!(:name => "New Apple Store")
-        lambda{ Store.find(2) }.should hit_cache(Store).times(1)
-        lambda{ Apple.find(1) }.should hit_cache(Apple).times(1)
+        expect{ Store.find(2) }.to hit_cache(Store).times(1)
+        expect{ Apple.find(1) }.to hit_cache(Apple).times(1)
       end
     end
 
     it "should clear the query cache completely when a record is updated" do
       ActiveRecord::Base.cache do
         init_query_cache
-        lambda{ Store.find(2) }.should hit_cache(Store).times(0)
-        lambda{ Apple.find(1) }.should hit_cache(Apple).times(0)
+        expect{ Store.find(2) }.to hit_cache(Store).times(0)
+        expect{ Apple.find(1) }.to hit_cache(Apple).times(0)
         @store1.name = "Store E"
         @store1.save!
-        lambda{ Store.find(2) }.should hit_cache(Store).times(1)
-        lambda{ Apple.find(1) }.should hit_cache(Apple).times(1)
+        expect{ Store.find(2) }.to hit_cache(Store).times(1)
+        expect{ Apple.find(1) }.to hit_cache(Apple).times(1)
       end
     end
 
     it "should clear the query cache completely when a record is destroyed" do
       ActiveRecord::Base.cache do
         init_query_cache
-        lambda{ Store.find(2) }.should hit_cache(Store).times(0)
-        lambda{ Apple.find(1) }.should hit_cache(Apple).times(0)
+        expect{ Store.find(2) }.to hit_cache(Store).times(0)
+        expect{ Apple.find(1) }.to hit_cache(Apple).times(0)
         @store1.destroy
-        lambda{ Store.find(2) }.should hit_cache(Store).times(1)
-        lambda{ Apple.find(1) }.should hit_cache(Apple).times(1)
+        expect{ Store.find(2) }.to hit_cache(Store).times(1)
+        expect{ Apple.find(1) }.to hit_cache(Apple).times(1)
       end
     end
   end

@@ -1,16 +1,20 @@
 # Examples:
-#  1) lambda{ Person.find(22) }.should use_cache(Person)
+#  1) expect{ Person.find(22) }.to use_cache(Person)
 #     _should perform at least one call (hit/miss) to any of the cache strategies for the Person model_
 #
-#  2) lambda{ Person.find(22) }.should use_cache(Person).on(:id)
+#  2) expect{ Person.find(22) }.to use_cache(Person).on(:id)
 #     _should perform at least one call (hit/miss) to the ID cache strategy for the Person model_
 #
-#  3) lambda{ Person.find_by_ids(22, 23, 24) }.should use_cache(Person).on(:id).times(2)
+#  3) expect{ Person.find_by_ids(22, 23, 24) }.to use_cache(Person).on(:id).times(2)
 #     _should perform exactly two calls (hit/miss) to the :id cache strategy for the Person model_
 #
-#  4) lambda{ Person.find_by_ids(22, 23, 24) }.should use_cache(Person).times(3)
+#  4) expect{ Person.find_by_ids(22, 23, 24) }.to use_cache(Person).times(3)
 #     _should perform exactly three calls (hit/miss) to any of the cache strategies for the Person model_
 RSpec::Matchers.define :use_cache do |model|
+
+  def supports_block_expectations?
+    true
+  end
 
   chain :on do |strategy|
     @strategy = strategy
@@ -34,12 +38,12 @@ RSpec::Matchers.define :use_cache do |model|
     @expected_nr_of_calls ? @nr_of_calls == @expected_nr_of_calls : @nr_of_calls > 0
   end
 
-  failure_message_for_should do |proc|
+  failure_message do |proc|
     prepare_message
     "Expected #{@strategy_msg} for #{model.name} to be called #{@times_msg}, but found #{@nr_of_calls}: #{@statistics_msg}"
   end
 
-  failure_message_for_should_not do |proc|
+  failure_message_when_negated do |proc|
     prepare_message
     "Expected #{@strategy_msg} for #{model.name} not to be called #{@times_msg}, but found #{@nr_of_calls}: #{@statistics_msg}"
   end

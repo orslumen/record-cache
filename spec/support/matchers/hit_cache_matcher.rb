@@ -1,16 +1,20 @@
 # Examples:
-#  1) lambda{ Person.find(22) }.should hit_cache(Person)
+#  1) expect{ Person.find(22) }.to hit_cache(Person)
 #     _should have at least one hit in any of the cache strategies for the Person model_
 #
-#  2) lambda{ Person.find(22) }.should hit_cache(Person).on(:id)
+#  2) expect{ Person.find(22) }.to hit_cache(Person).on(:id)
 #     _should have at least one hit in the ID cache strategy for the Person model_
 #
-#  3) lambda{ Person.find_by_ids(22, 23, 24) }.should hit_cache(Person).on(:id).times(2)
+#  3) expect{ Person.find_by_ids(22, 23, 24) }.to hit_cache(Person).on(:id).times(2)
 #     _should have exactly two hits in the :id cache strategy for the Person model_
 #
-#  4) lambda{ Person.find_by_ids(22, 23, 24) }.should hit_cache(Person).times(3)
+#  4) expect{ Person.find_by_ids(22, 23, 24) }.to hit_cache(Person).times(3)
 #     _should have exactly three hits in any of the cache strategies for the Person model_
 RSpec::Matchers.define :hit_cache do |model|
+
+  def supports_block_expectations?
+    true
+  end
 
   chain :on do |strategy|
     @strategy = strategy
@@ -34,12 +38,12 @@ RSpec::Matchers.define :hit_cache do |model|
     @expected_nr_of_hits ? @nr_of_hits == @expected_nr_of_hits : @nr_of_hits > 0
   end
 
-  failure_message_for_should do |proc|
+  failure_message do |proc|
     prepare_message
     "Expected #{@strategy_msg} for #{model.name} to be hit #{@times_msg}, but found #{@nr_of_hits}: #{@statistics_msg}"
   end
 
-  failure_message_for_should_not do |proc|
+  failure_message_when_negated do |proc|
     prepare_message
     "Expected #{@strategy_msg} for #{model.name} not to be hit #{@times_msg}, but found #{@nr_of_hits}: #{@statistics_msg}"
   end

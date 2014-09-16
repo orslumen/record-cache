@@ -8,9 +8,7 @@ SimpleCov.start do
 end
 
 require "rubygems"
-require "test/unit"
 require "rspec"
-require 'rr'
 require 'database_cleaner'
 require "logger"
 require "record_cache"
@@ -36,8 +34,7 @@ load(dir + "/db/seeds.rb")
 
 # Clear cache after each test
 RSpec.configure do |config|
-  config.mock_with :rr
-  
+
   config.before(:each) do
     RecordCache::Base.enable
     DatabaseCleaner.start

@@ -1,10 +1,14 @@
 # Examples:
-#  1) lambda{ Person.find(22) }.should log(:debug, %(UniqueIndexCache on 'id' hit for ids 1)
+#  1) expect{ Person.find(22) }.to log(:debug, %(UniqueIndexCache on 'id' hit for ids 1)
 #     _should have at least one debug log statement as given above_
 #
-#  2) lambda{ Person.find(22) }.should log(:debug, /^UniqueIndexCache/)
+#  2) expect{ Person.find(22) }.to log(:debug, /^UniqueIndexCache/)
 #     _should have at least one debug log statement starting with UniqueIndexCache_
 RSpec::Matchers.define :log do |severity, expected|
+
+  def supports_block_expectations?
+    true
+  end
 
   match do |proc|
     logger = RecordCache::Base.logger
@@ -30,11 +34,11 @@ RSpec::Matchers.define :log do |severity, expected|
     @found = logger.instance_variable_get(:@found)
   end
 
-  failure_message_for_should do |proc|
+  failure_message do |proc|
     "Expected #{@found_messages.inspect} to include #{expected.inspect}"
   end
 
-  failure_message_for_should_not do |proc|
+  failure_message_when_negated do |proc|
     "Expected #{@found_messages.inspect} not to include #{expected.inspect}"
   end
 

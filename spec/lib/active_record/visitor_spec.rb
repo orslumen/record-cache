@@ -10,13 +10,13 @@ describe 'ActiveRecord Visitor' do
   it 'should implement all visitor methods' do
     all_visit_methods = find_visit_methods(Arel::Visitors::ToSql)
     rc_visit_methods = find_visit_methods(RecordCache::Arel::QueryVisitor)
-    (all_visit_methods - rc_visit_methods).should == []
+    expect(all_visit_methods - rc_visit_methods).to be_empty
   end
 
   it 'should not implement old visitor methods' do
     all_visit_methods = find_visit_methods(Arel::Visitors::ToSql)
     rc_visit_methods = find_visit_methods(RecordCache::Arel::QueryVisitor)
-    (rc_visit_methods - all_visit_methods).should == []
+    expect(rc_visit_methods - all_visit_methods).to be_empty
   end
 
 end
