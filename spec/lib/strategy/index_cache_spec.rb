@@ -18,6 +18,12 @@ describe RecordCache::Strategy::IndexCache do
     expect{ Apple.where(:store_id => 1).all }.to hit_cache(Apple).on(:id).times(@apples.size)
   end
 
+  it "should find cached records through relationship" do
+    store = Store.first
+    expect{ @apple = store.apples.find(3) }.to use_cache(Apple).on(:id).times(1)
+    expect(@apple.name).to eq("Adams Apple 3")
+  end
+
   context "logging" do
     before(:each) do
       Apple.where(:store_id => 1).all
