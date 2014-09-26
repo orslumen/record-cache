@@ -41,6 +41,12 @@ describe RecordCache::Strategy::Util do
       expect(apples).to eq([Apple.find_by_name("Adams Apple 1")])
     end
 
+    it "should filter on text case insensitive" do
+      apples = Apple.where(:id => [1,2]).all
+      subject.filter!(apples, :name => "adams aPPle 1")
+      expect(apples).to eq([Apple.find_by_name("Adams Apple 1")])
+    end
+
     it "should filter on integers" do
       apples = Apple.where(:id => [1,2,8,9]).all
       subject.filter!(apples, :store_id => 2)

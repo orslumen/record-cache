@@ -27,15 +27,26 @@ module RecordCache
 
         # Filter the cached records in memory
         # only simple x = y or x IN (a,b,c) can be handled
+        # string comparison is case insensitive
         # Example:
         #  RecordCache::Strategy::Util.filter!(Apple.all, :price => [0.49, 0.59, 0.69], :name => "Green Apple")
         def filter!(records, wheres)
           wheres.each_pair do |attr, value|
             attr = attr.to_sym
             if value.is_a?(Array)
-              records.reject! { |record| !value.include?(record.send(attr)) }
+              where_values = Set.new(value.first.respond_to?(:downcase) ? value.map(&:downcase) : value)
+              records.select! do |record|
+                attribute_value = record.send(attr)
+                attribute_value = attribute_value.downcase if attribute_value.respond_to?(:downcase)
+                where_values.include?(attribute_value)
+              end
             else
-              records.reject! { |record| record.send(attr) != value }
+              where_value = value.respond_to?(:downcase) ? value.downcase : value
+              records.select! do |record|
+                attribute_value = record.send(attr)
+                attribute_value = attribute_value.downcase if attribute_value.respond_to?(:downcase)
+                attribute_value == where_value
+              end
             end
           end
         end
