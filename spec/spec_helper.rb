@@ -1,3 +1,5 @@
+ENV['RAILS_ENV'] = 'test'
+
 dir = File.dirname(__FILE__)
 $LOAD_PATH.unshift dir + "/../lib"
 $LOAD_PATH.unshift dir
@@ -36,12 +38,11 @@ load(dir + "/db/seeds.rb")
 
 # Clear cache after each test
 RSpec.configure do |config|
-
   config.before(:each) do
     RecordCache::Base.enable
     DatabaseCleaner.start
   end
-  
+
   config.after(:each) do
     DatabaseCleaner.clean
     RecordCache::Base.version_store.reset!
