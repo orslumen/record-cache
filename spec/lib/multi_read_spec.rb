@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe RecordCache::MultiRead do
+RSpec.describe RecordCache::MultiRead do
 
   it "should not delegate to single reads when multi_read is supported" do
     class MultiReadSupported

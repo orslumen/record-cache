@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe RecordCache::Statistics do
+RSpec.describe RecordCache::Statistics do
   before(:each) do
     # remove active setting from other tests
     RecordCache::Statistics.send(:remove_instance_variable, :@active) if RecordCache::Statistics.instance_variable_get(:@active)

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe RecordCache::Query do
+RSpec.describe RecordCache::Query do
   before(:each) do
     @query = RecordCache::Query.new
   end

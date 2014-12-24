@@ -1,7 +1,7 @@
 # encoding: utf-8
 require 'spec_helper'
 
-describe RecordCache::Base do
+RSpec.describe RecordCache::Base do
 
   it "should run a block in enabled mode" do
     RecordCache::Base.disable!

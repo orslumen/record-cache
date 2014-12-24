@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe RecordCache::Dispatcher do
+RSpec.describe RecordCache::Dispatcher do
   before(:each) do
     @apple_dispatcher = Apple.record_cache
   end

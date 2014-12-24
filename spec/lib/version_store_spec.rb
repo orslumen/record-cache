@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe RecordCache::VersionStore do
+RSpec.describe RecordCache::VersionStore do
   
   before(:each) do
     @version_store = RecordCache::Base.version_store

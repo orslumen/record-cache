@@ -19,7 +19,7 @@ module RecordCache
           record = serialized[CLASS_KEY].constantize.allocate
           attributes = serialized[ATTRIBUTES_KEY]
           record.class.serialized_attributes.keys.each do |attribute|
-            attributes[attribute] = attributes[attribute].unserialize if attributes[attribute].respond_to?(:unserialize)
+            attributes[attribute] = attributes[attribute].unserialize(attributes[attribute].value) if attributes[attribute].respond_to?(:unserialize)
           end
           record.init_with('attributes' => attributes)
           record

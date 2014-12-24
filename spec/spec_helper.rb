@@ -38,6 +38,9 @@ load(dir + "/db/seeds.rb")
 
 # Clear cache after each test
 RSpec.configure do |config|
+  config.disable_monkey_patching!
+  config.color = true
+
   config.before(:each) do
     RecordCache::Base.enable
     DatabaseCleaner.start

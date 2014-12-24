@@ -54,4 +54,4 @@ RSpec::Matchers.define :miss_cache do |model|
     @statistics_msg = @stats.map{|strategy, s| "#{strategy} => #{s.inspect}" }.join(", ")
   end
 
-end 
+end
