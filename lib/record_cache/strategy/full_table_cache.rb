@@ -7,7 +7,7 @@ module RecordCache
       def self.parse(base, record_store, options)
         return nil unless options[:full_table]
         return nil unless base.table_exists?
-        
+
         FullTableCache.new(base, :full_table, record_store, options)
       end
 

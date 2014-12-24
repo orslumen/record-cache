@@ -7,12 +7,14 @@ SimpleCov.start do
   add_filter '/spec/'
 end
 
-require "rubygems"
-require "rspec"
+require 'rubygems'
+require 'rspec'
 require 'database_cleaner'
-require "logger"
-require "record_cache"
-require "record_cache/test/resettable_version_store"
+require 'logger'
+require 'record_cache'
+require 'record_cache/test/resettable_version_store'
+
+require 'test_after_commit'
 
 # spec support files
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each {|f| require f}

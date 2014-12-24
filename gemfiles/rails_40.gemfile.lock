@@ -1,5 +1,5 @@
 PATH
-  remote: .
+  remote: ../
   specs:
     record-cache (0.1.3)
       rails
@@ -107,6 +107,7 @@ DEPENDENCIES
   appraisal
   bundler
   database_cleaner
+  rails (= 4.0.12)
   rake
   record-cache!
   rspec (~> 3.0)
