@@ -40,7 +40,7 @@ describe RecordCache::Strategy::UniqueIndexCache do
     it "should write full miss to the debug log" do
       expect{ Apple.find(2) }.to log(:debug, %(UniqueIndexCache on 'Apple.id' miss for ids 2))
     end
-    
+
     it "should write partial hits to the debug log" do
       expect{ Apple.where(:id => [1,2]).all }.to log(:debug, %(UniqueIndexCache on 'Apple.id' partial hit for ids [1, 2]: missing [2]))
     end
@@ -55,6 +55,8 @@ describe RecordCache::Strategy::UniqueIndexCache do
 
     # @see https://github.com/orslumen/record-cache/issues/2
     it "should not use the cache when a lock is used" do
+      pending("Any_lock is sqlite specific and I'm not aware of a mysql alternative") unless ActiveRecord::Base.connection.adapter_name == "SQLite"
+
       expect{ Apple.lock("any_lock").where(:id => 1).all }.to_not hit_cache(Apple)
     end
 
@@ -98,7 +100,7 @@ describe RecordCache::Strategy::UniqueIndexCache do
       expect{ Apple.where(:id => [1,2]).joins(:store).all }.to_not use_cache(Apple).on(:id)
     end
   end
-  
+
   context "record_change" do
     before(:each) do
       # fill cache
@@ -136,7 +138,7 @@ describe RecordCache::Strategy::UniqueIndexCache do
     end
 
   end
-  
+
   context "invalidate" do
     before(:each) do
       @apple1 = Apple.find(1)
