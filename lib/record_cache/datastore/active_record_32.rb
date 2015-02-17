@@ -33,7 +33,7 @@ module RecordCache
           arel = sql.is_a?(String) ? sql.instance_variable_get(:@arel) : sql
 
           sanitized_sql = sanitize_sql(sql)
-          sanitized_sql = connection.to_sql(sanitized_sql, binds) if sanitized_sql.respond_to?(:ast)
+          sanitized_sql = connection.to_sql(sanitized_sql, binds.dup) if sanitized_sql.respond_to?(:ast)
 
           records = if connection.query_cache_enabled
                       query_cache = connection.instance_variable_get(:@query_cache)
