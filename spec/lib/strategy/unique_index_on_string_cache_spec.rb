@@ -41,6 +41,9 @@ describe RecordCache::Strategy::UniqueIndexCache do
 
     # @see https://github.com/orslumen/record-cache/issues/2
     it "should not use the cache when a lock is used" do
+
+      pending("Any_lock is sqlite specific and I'm not aware of a mysql alternative") unless ActiveRecord::Base.connection.adapter_name == "SQLite"
+
       expect{ Person.lock("any_lock").where(:name => "Fry").all }.to_not hit_cache(Person)
     end
 
@@ -92,7 +95,7 @@ describe RecordCache::Strategy::UniqueIndexCache do
       expect{ Person.where(:name => ["Fry", "Chase"]).order("name ASC").all }.to hit_cache(Person).on(:name).times(2)
     end
   end
-  
+
   context "record_change" do
     before(:each) do
       # fill cache
@@ -128,9 +131,9 @@ describe RecordCache::Strategy::UniqueIndexCache do
       expect{ @people = Person.where(:name => ["Fry", "Chase"]).order("id ASC").all }.to hit_cache(Person).on(:name).times(2)
       expect(@people.map(&:height)).to eq([1.71, 1.91])
     end
-    
+
   end
-  
+
   context "invalidate" do
     before(:each) do
       @fry = Person.find_by_name("Fry")
@@ -164,5 +167,5 @@ describe RecordCache::Strategy::UniqueIndexCache do
     end
 
   end
-  
+
 end

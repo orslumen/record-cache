@@ -26,7 +26,7 @@ ActiveRecord::Base.logger = Logger.new(dir + "/log/debug.log")
 
 # SQL Lite
 ActiveRecord::Base.configurations = YAML::load(IO.read(dir + "/db/database.yml"))
-ActiveRecord::Base.establish_connection("sqlite3")
+ActiveRecord::Base.establish_connection(ENV["DATABASE_ADAPTER"] || "sqlite3")
 
 # Initializers + Model + Data
 load(dir + "/initializers/record_cache.rb")
