@@ -1,3 +1,5 @@
+ENV["RAILS_ENV"]="test"
+
 dir = File.dirname(__FILE__)
 $LOAD_PATH.unshift dir + "/../lib"
 $LOAD_PATH.unshift dir
@@ -39,7 +41,7 @@ RSpec.configure do |config|
     RecordCache::Base.enable
     DatabaseCleaner.start
   end
-  
+
   config.after(:each) do
     DatabaseCleaner.clean
     RecordCache::Base.version_store.reset!
