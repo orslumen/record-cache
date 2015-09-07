@@ -199,7 +199,7 @@ module RecordCache
         visit o.froms  if @cacheable
         visit o.wheres if @cacheable
         visit o.source if @cacheable
-        @cacheable = o.projections.none?{ |projection| projection.to_s =~ /distinct/i } unless o.projections.empty?
+        @cacheable = o.projections.none?{ |projection| projection.to_s =~ /distinct/i } unless o.projections.empty? if @cacheable
       end
 
       def visit_Arel_Nodes_SelectStatement o
