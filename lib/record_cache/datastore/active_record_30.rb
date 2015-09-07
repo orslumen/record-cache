@@ -173,7 +173,7 @@ module RecordCache
         @cacheable = false unless o.groups.empty?
         visit o.froms  if @cacheable
         visit o.wheres if @cacheable
-        # skip o.projections
+        @cacheable = o.projections.none?{ |projection| projection.to_s =~ /distinct/i } unless o.projections.empty?
       end
 
       def visit_Arel_Nodes_SelectStatement o
