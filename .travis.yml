@@ -15,8 +15,6 @@ matrix:
     - rvm: jruby-head
 
 gemfile:
-  - gemfiles/rails_30.gemfile
-  - gemfiles/rails_31.gemfile
-  - gemfiles/rails_32.gemfile
+  - gemfiles/rails_40.gemfile
 
 script: 'bundle exec rake'
