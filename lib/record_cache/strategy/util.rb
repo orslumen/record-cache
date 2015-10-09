@@ -35,14 +35,14 @@ module RecordCache
             attr = attr.to_sym
             if value.is_a?(Array)
               where_values = Set.new(value.first.respond_to?(:downcase) ? value.map(&:downcase) : value)
-              records.select! do |record|
+              records.to_a.select! do |record|
                 attribute_value = record.send(attr)
                 attribute_value = attribute_value.downcase if attribute_value.respond_to?(:downcase)
                 where_values.include?(attribute_value)
               end
             else
               where_value = value.respond_to?(:downcase) ? value.downcase : value
-              records.select! do |record|
+              records.to_a.select! do |record|
                 attribute_value = record.send(attr)
                 attribute_value = attribute_value.downcase if attribute_value.respond_to?(:downcase)
                 attribute_value == where_value

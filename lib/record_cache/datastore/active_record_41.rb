@@ -343,12 +343,12 @@ module RecordCache
           nil
         end
 
-        def update_all_with_record_cache(updates, conditions = nil, options = {})
-          result = update_all_without_record_cache(updates, conditions, options)
+        def update_all_with_record_cache(updates)
+          result = update_all_without_record_cache(updates)
 
           if record_cache?
             # when this condition is met, the arel.update method will be called on the current scope, see ActiveRecord::Relation#update_all
-            unless conditions || options.present? || @limit_value.present? != @order_values.present?
+            unless @limit_value.present? != @order_values.present?
               # get all attributes that contain a unique index for this model
               unique_index_attributes = RecordCache::Strategy::UniqueIndexCache.attributes(self)
               # go straight to SQL result (without instantiating records) for optimal performance
@@ -399,6 +399,7 @@ module RecordCache
 
       module InstanceMethods
         def delete_records_with_record_cache(records, method)
+          records = load_target if records == :all
           # invalidate :id cache for all records
           records.each{ |record| record.class.record_cache.invalidate(record.id) if record.class.record_cache? unless record.new_record? }
           # invalidate the referenced class for the attribute/value pair on the index cache
