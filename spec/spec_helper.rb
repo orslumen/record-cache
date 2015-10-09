@@ -1,4 +1,4 @@
-ENV['RAILS_ENV'] = 'test'
+ENV["RAILS_ENV"]="test"
 
 dir = File.dirname(__FILE__)
 $LOAD_PATH.unshift dir + "/../lib"
@@ -28,7 +28,7 @@ ActiveRecord::Base.logger = Logger.new(dir + "/log/debug.log")
 
 # SQL Lite
 ActiveRecord::Base.configurations = YAML::load(IO.read(dir + "/db/database.yml"))
-ActiveRecord::Base.establish_connection("sqlite3")
+ActiveRecord::Base.establish_connection(ENV["DATABASE_ADAPTER"] || "sqlite3")
 
 # Initializers + Model + Data
 load(dir + "/initializers/record_cache.rb")

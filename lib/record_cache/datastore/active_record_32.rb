@@ -33,7 +33,7 @@ module RecordCache
           arel = sql.is_a?(String) ? sql.instance_variable_get(:@arel) : sql
 
           sanitized_sql = sanitize_sql(sql)
-          sanitized_sql = connection.to_sql(sanitized_sql, binds) if sanitized_sql.respond_to?(:ast)
+          sanitized_sql = connection.to_sql(sanitized_sql, binds.dup) if sanitized_sql.respond_to?(:ast)
 
           records = if connection.query_cache_enabled
                       query_cache = connection.instance_variable_get(:@query_cache)
@@ -210,7 +210,7 @@ module RecordCache
         visit o.froms  if @cacheable
         visit o.wheres if @cacheable
         visit o.source if @cacheable
-        # skip o.projections
+        @cacheable = o.projections.none?{ |projection| projection.to_s =~ /distinct/i } unless o.projections.empty? if @cacheable
       end
 
       def visit_Arel_Nodes_SelectStatement o

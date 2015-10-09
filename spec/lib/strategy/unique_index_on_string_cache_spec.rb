@@ -41,6 +41,8 @@ RSpec.describe RecordCache::Strategy::UniqueIndexCache do
 
     # @see https://github.com/orslumen/record-cache/issues/2
     it "should not use the cache when a lock is used" do
+      pending("Any_lock is sqlite specific and I'm not aware of a mysql alternative") unless ActiveRecord::Base.connection.adapter_name == "SQLite"
+
       expect{ Person.lock("any_lock").where(:name => "Fry").load }.to_not hit_cache(Person)
     end
 

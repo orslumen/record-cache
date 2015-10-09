@@ -4,3 +4,10 @@ sqlite3:
   encoding: utf8
   charset: utf8
   timeout: 5000
+
+
+mysql:
+  adapter: mysql2
+  database: "record_cache"
+  username: record_cache
+  password: test

@@ -4,7 +4,7 @@ Record Cache
 [![Build Status](http://img.shields.io/travis/orslumen/record-cache.svg?style=flat)](https://travis-ci.org/orslumen/record-cache)
 [![Gem Version](http://img.shields.io/gem/v/record-cache.svg?style=flat)](https://rubygems.org/gems/record-cache)
 
-*Cache Active Model Records in Rails 3*
+*Cache Active Model Records in Rails 3 and Rails 4*
 
 Record Cache transparently stores Records in a Cache Store to retrieve those Records from the store when queried using Active Model.
 Cache invalidation is performed automatically when Records are created, updated or destroyed. Currently only Active Record is supported, but more
@@ -128,7 +128,7 @@ Cucumber example, in features/support/env.rb:
 Restrictions
 ------------
 
-1. This gem is dependent on Rails 3
+1. This gem is dependent on Rails 3 and Rails 4
 
 2. Only Active Record is supported as a data store.
 
@@ -242,6 +242,7 @@ Development
 -----------
 
     $ bundle
+    $ appraisal
 
     # run the specs (requires ruby 1.9.3)
     $ appraisal rake

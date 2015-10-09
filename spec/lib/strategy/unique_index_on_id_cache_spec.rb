@@ -55,6 +55,8 @@ RSpec.describe RecordCache::Strategy::UniqueIndexCache do
 
     # @see https://github.com/orslumen/record-cache/issues/2
     it "should not use the cache when a lock is used" do
+      pending("Any_lock is sqlite specific and I'm not aware of a mysql alternative") unless ActiveRecord::Base.connection.adapter_name == "SQLite"
+
       expect{ Apple.lock("any_lock").where(:id => 1).load }.to_not hit_cache(Apple)
     end
 
@@ -97,8 +99,12 @@ RSpec.describe RecordCache::Strategy::UniqueIndexCache do
     it "should not use the cache when a join clause is used" do
       expect{ Apple.where(:id => [1,2]).joins(:store).load }.to_not use_cache(Apple).on(:id)
     end
+
+    it "should not use the cache when distinct is used in a select" do
+      expect{ Apple.select('distinct person_id').where(:id => [1, 2]).load }.not_to hit_cache(Apple).on(:id)
+    end
   end
-  
+
   context "record_change" do
     before(:each) do
       # fill cache
