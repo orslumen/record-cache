@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'rails'
 
   s.add_development_dependency 'bundler'
-  s.add_development_dependency 'activerecord', '< 4.1'
+  s.add_development_dependency 'activerecord', '< 4.2'
   s.add_development_dependency 'sqlite3'
   s.add_development_dependency 'pry'
   s.add_development_dependency 'mysql2'
