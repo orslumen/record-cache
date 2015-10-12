@@ -16,10 +16,10 @@ Gem::Specification.new do |s|
   s.test_files       = `git ls-files -- spec/*`.split("\n")
   s.require_path     = 'lib'
 
-  s.add_runtime_dependency 'rails', '> 3.0'
+  s.add_runtime_dependency 'rails'
 
-  s.add_development_dependency 'bundler', '~> 1.3'
-  s.add_development_dependency 'activerecord', '> 3.0'
+  s.add_development_dependency 'bundler'
+  s.add_development_dependency 'activerecord', '< 4.1'
   s.add_development_dependency 'sqlite3'
   s.add_development_dependency 'pry'
   s.add_development_dependency 'mysql2'
@@ -28,5 +28,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rspec', '~> 3.0'
   s.add_development_dependency 'database_cleaner'
   s.add_development_dependency 'appraisal'
+  s.add_development_dependency 'test_after_commit'
 
 end

@@ -1,7 +1,7 @@
 # encoding: utf-8
 require 'spec_helper'
 
-describe 'ActiveRecord Visitor' do
+RSpec.describe 'ActiveRecord Visitor' do
 
   def find_visit_methods(visitor_class)
     (visitor_class.instance_methods + visitor_class.private_instance_methods).select{ |method| method.to_s =~ /^visit_Arel_/ }.sort.uniq

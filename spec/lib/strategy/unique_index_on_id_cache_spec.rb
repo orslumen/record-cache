@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe RecordCache::Strategy::UniqueIndexCache do
+RSpec.describe RecordCache::Strategy::UniqueIndexCache do
 
   it "should retrieve an Apple from the cache" do
     expect{ Apple.find(1) }.to miss_cache(Apple).on(:id).times(1)
@@ -42,7 +42,7 @@ describe RecordCache::Strategy::UniqueIndexCache do
     end
 
     it "should write partial hits to the debug log" do
-      expect{ Apple.where(:id => [1,2]).all }.to log(:debug, %(UniqueIndexCache on 'Apple.id' partial hit for ids [1, 2]: missing [2]))
+      expect{ Apple.where(:id => [1,2]).load }.to log(:debug, %(UniqueIndexCache on 'Apple.id' partial hit for ids [1, 2]: missing [2]))
     end
   end
 
@@ -57,51 +57,55 @@ describe RecordCache::Strategy::UniqueIndexCache do
     it "should not use the cache when a lock is used" do
       pending("Any_lock is sqlite specific and I'm not aware of a mysql alternative") unless ActiveRecord::Base.connection.adapter_name == "SQLite"
 
-      expect{ Apple.lock("any_lock").where(:id => 1).all }.to_not hit_cache(Apple)
+      expect{ Apple.lock("any_lock").where(:id => 1).load }.to_not hit_cache(Apple)
     end
 
     it "should use the cache when a single id is requested" do
-      expect{ Apple.where(:id => 1).all }.to hit_cache(Apple).on(:id).times(1)
+      expect{ Apple.where(:id => 1).load }.to hit_cache(Apple).on(:id).times(1)
     end
 
     it "should use the cache when a multiple ids are requested" do
-      expect{ Apple.where(:id => [1, 2]).all }.to hit_cache(Apple).on(:id).times(2)
+      expect{ Apple.where(:id => [1, 2]).load }.to hit_cache(Apple).on(:id).times(2)
     end
 
     it "should use the cache when a single id is requested and the limit is 1" do
-      expect{ Apple.where(:id => 1).limit(1).all }.to hit_cache(Apple).on(:id).times(1)
+      expect{ Apple.where(:id => 1).limit(1).load }.to hit_cache(Apple).on(:id).times(1)
     end
 
     it "should not use the cache when a single id is requested and the limit is > 1" do
-      expect{ Apple.where(:id => 1).limit(2).all }.to_not use_cache(Apple).on(:id)
+      expect{ Apple.where(:id => 1).limit(2).load }.to_not use_cache(Apple).on(:id)
     end
 
     it "should not use the cache when multiple ids are requested and the limit is 1" do
-      expect{ Apple.where(:id => [1, 2]).limit(1).all }.to_not use_cache(Apple).on(:id)
+      expect{ Apple.where(:id => [1, 2]).limit(1).load }.to_not use_cache(Apple).on(:id)
     end
 
     it "should use the cache when a single id is requested together with other where clauses" do
-      expect{ Apple.where(:id => 1).where(:name => "Adams Apple x").all }.to hit_cache(Apple).on(:id).times(1)
+      expect{ Apple.where(:id => 1).where(:name => "Adams Apple x").load }.to hit_cache(Apple).on(:id).times(1)
     end
 
     it "should use the cache when a multiple ids are requested together with other where clauses" do
-      expect{ Apple.where(:id => [1,2]).where(:name => "Adams Apple x").all }.to hit_cache(Apple).on(:id).times(2)
+      expect{ Apple.where(:id => [1,2]).where(:name => "Adams Apple x").load }.to hit_cache(Apple).on(:id).times(2)
     end
 
     it "should use the cache when a single id is requested together with (simple) sort clauses" do
-      expect{ Apple.where(:id => 1).order("name ASC").all }.to hit_cache(Apple).on(:id).times(1)
+      expect{ Apple.where(:id => 1).order("name ASC").load }.to hit_cache(Apple).on(:id).times(1)
     end
 
     it "should use the cache when a multiple ids are requested together with (simple) sort clauses" do
-      expect{ Apple.where(:id => [1,2]).order("name ASC").all }.to hit_cache(Apple).on(:id).times(2)
+      expect{ Apple.where(:id => [1,2]).order("name ASC").load }.to hit_cache(Apple).on(:id).times(2)
     end
 
     it "should not use the cache when a join clause is used" do
-      expect{ Apple.where(:id => [1,2]).joins(:store).all }.to_not use_cache(Apple).on(:id)
+      expect{ Apple.where(:id => [1,2]).joins(:store).load }.to_not use_cache(Apple).on(:id)
     end
 
     it "should not use the cache when distinct is used in a select" do
-      expect{ Apple.select('distinct person_id').where(:id => [1, 2]).all }.not_to hit_cache(Apple).on(:id)
+      expect{ Apple.select('distinct person_id').where(:id => [1, 2]).load }.not_to hit_cache(Apple).on(:id)
+    end
+
+    it "should not use the cache when distinct is used in a select" do
+      expect{ Apple.select('distinct person_id').where(:id => [1, 2]).load }.not_to hit_cache(Apple).on(:id)
     end
   end
 
@@ -113,12 +117,12 @@ describe RecordCache::Strategy::UniqueIndexCache do
     end
 
     it "should invalidate destroyed records" do
-      expect{ Apple.where(:id => 1).all }.to hit_cache(Apple).on(:id).times(1)
+      expect{ Apple.where(:id => 1).load }.to hit_cache(Apple).on(:id).times(1)
       @apple1.destroy
-      expect{ @apples = Apple.where(:id => 1).all }.to miss_cache(Apple).on(:id).times(1)
+      expect{ @apples = Apple.where(:id => 1).load }.to miss_cache(Apple).on(:id).times(1)
       expect(@apples).to be_empty
       # try again, to make sure the "missing record" is not cached
-      expect{ Apple.where(:id => 1).all }.to miss_cache(Apple).on(:id).times(1)
+      expect{ Apple.where(:id => 1).load }.to miss_cache(Apple).on(:id).times(1)
     end
 
     it "should add updated records directly to the cache" do
@@ -137,7 +141,7 @@ describe RecordCache::Strategy::UniqueIndexCache do
     it "should add updated records to the cache, also when multiple ids are queried" do
       @apple1.name = "Applejuice"
       @apple1.save!
-      expect{ @apples = Apple.where(:id => [1, 2]).order('id ASC').all }.to hit_cache(Apple).on(:id).times(2)
+      expect{ @apples = Apple.where(:id => [1, 2]).order('id ASC').load }.to hit_cache(Apple).on(:id).times(2)
       expect(@apples.map(&:name)).to eq(["Applejuice", "Adams Apple 2"])
     end
 
@@ -157,27 +161,27 @@ describe RecordCache::Strategy::UniqueIndexCache do
     it "should only miss the cache for the invalidated record when multiple ids are queried" do
       # miss on 1
       Apple.record_cache[:id].invalidate(1)
-      expect{ Apple.where(:id => [1, 2]).all }.to miss_cache(Apple).on(:id).times(1)
+      expect{ Apple.where(:id => [1, 2]).load }.to miss_cache(Apple).on(:id).times(1)
       # hit on 2
       Apple.record_cache[:id].invalidate(1)
-      expect{ Apple.where(:id => [1, 2]).all }.to hit_cache(Apple).on(:id).times(1)
+      expect{ Apple.where(:id => [1, 2]).load }.to hit_cache(Apple).on(:id).times(1)
       # nothing invalidated, both hit
-      expect{ Apple.where(:id => [1, 2]).all }.to hit_cache(Apple).on(:id).times(2)
+      expect{ Apple.where(:id => [1, 2]).load }.to hit_cache(Apple).on(:id).times(2)
     end
 
     it "should invalidate records when using update_all" do
-      Apple.where(:id => [3,4,5]).all # fill id cache on all Adam Store apples
-      expect{ @apples = Apple.where(:id => [1, 2, 3, 4, 5]).order('id ASC').all }.to hit_cache(Apple).on(:id).times(5)
+      Apple.where(:id => [3,4,5]).load # fill id cache on all Adam Store apples
+      expect{ @apples = Apple.where(:id => [1, 2, 3, 4, 5]).order('id ASC').load }.to hit_cache(Apple).on(:id).times(5)
       expect(@apples.map(&:name)).to eq(["Adams Apple 1", "Adams Apple 2", "Adams Apple 3", "Adams Apple 4", "Adams Apple 5"])
       # update 3 of the 5 apples in the Adam Store
       Apple.where(:id => [1,2,3]).update_all(:name => "Uniform Apple")
-      expect{ @apples = Apple.where(:id => [1, 2, 3, 4, 5]).order('id ASC').all }.to hit_cache(Apple).on(:id).times(2)
+      expect{ @apples = Apple.where(:id => [1, 2, 3, 4, 5]).order('id ASC').load }.to hit_cache(Apple).on(:id).times(2)
       expect(@apples.map(&:name)).to eq(["Uniform Apple", "Uniform Apple", "Uniform Apple", "Adams Apple 4", "Adams Apple 5"])
     end
 
     it "should invalidate reflection indexes when a has_many relation is updated" do
       # assign different apples to store 2
-      expect{ Apple.where(:store_id => 1).all }.to hit_cache(Apple).on(:id).times(2)
+      expect{ Apple.where(:store_id => 1).load }.to hit_cache(Apple).on(:id).times(2)
       store2_apple_ids = Apple.where(:store_id => 2).map(&:id)
       store1 = Store.find(1)
       store1.apple_ids = store2_apple_ids
@@ -295,8 +299,6 @@ describe RecordCache::Strategy::UniqueIndexCache do
     end
 
     it "should not update the cache for the rolled back inner transaction" do
-      pending "rails calls after_commit on records that are in a transaction that is rolled back"
-
       apple1, apple2 = nil
 
       ActiveRecord::Base.transaction do

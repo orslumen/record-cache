@@ -9,7 +9,7 @@ module RecordCache
   module Base
     class << self
       def included(klass)
-        klass.class_eval do 
+        klass.class_eval do
           extend ClassMethods
           include InstanceMethods
         end
@@ -113,7 +113,7 @@ module RecordCache
       #   :store => the cache store for the instances, e.g. :memory_store, :dalli_store* (default: Rails.cache)
       #             or one of the store ids defined using +RecordCache::Base.register_store+
       #   :key   => provide a unique shorter key to limit the cache key length (default: model.name)
-      # 
+      #
       # cache strategy specific options:
       #   :index => one or more attributes (Symbols) for which the ids are cached for the value of the attribute
       #
@@ -124,7 +124,7 @@ module RecordCache
       #   - use :index => :person_id for aggregated has_many associations
       def cache_records(options = {})
         unless @rc_dispatcher
-          @rc_dispatcher = RecordCache::Dispatcher.new(self) 
+          @rc_dispatcher = RecordCache::Dispatcher.new(self)
           # Callback for Data Store specific initialization
           record_cache_init
 

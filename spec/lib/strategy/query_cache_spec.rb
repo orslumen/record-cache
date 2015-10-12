@@ -15,7 +15,7 @@ require 'spec_helper'
 # happen to records by another process, while you have already got
 # references to that records in QueryCache, that you won't see the changes
 # made by the other process.
-describe "QueryCache" do
+RSpec.describe "QueryCache" do
 
   it "should retrieve a record from the QueryCache" do
     ActiveRecord::Base.cache do
