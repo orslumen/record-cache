@@ -247,11 +247,11 @@ Development
     # run the specs (requires ruby 1.9.3)
     $ appraisal rake
 
-    # run the specs for a particular version (supported are rails-30 and rails-31)
-    $ appraisal rails-30 rake
+    # run the specs for a particular version (supported are rails-30, rails-31, rails-32, rails-40)
+    $ appraisal rails-32 rake
 
     # run a single spec
-    $ appraisal rails-30 rspec ./spec/lib/strategy/base_spec.rb:61
+    $ appraisal rails-32 rspec ./spec/lib/strategy/base_spec.rb:61
 
 Deploying the gem:
 
@@ -270,25 +270,16 @@ Switch on DEBUG logging (`config.log_level = :debug` in development.rb) to get m
 Release Notes
 -------------
 
-#### Version 1.0
+#### Version 0.1.4
 
-First version, with the following Strategies:
+1. Case insensitive filtering
+1. to_sql no longer destroying the sql binds (John Morales)
+1. Rails 4.0 support (Robin Roestenburg & Pitr https://github.com/orslumen/record-cache/pull/44)
+1. Rails 4.1 support (Pitr https://github.com/orslumen/record-cache/pull/45)
+1. Fix for +select('distinct ...')+ construct
 
-1. Request Cache
-1. ID Cache
-1. Index Cache
 
-#### Version 1.1
-
-Added support for Rails 3.1
-
-#### Version 1.2
-
-Refactoring: Moved Serialization, Sorting and Filtering to separate Util class.
-
-Now it is possible to re-use MySQL style sorting (with collation) in your own app, e.g. by calling `RecordCache::Strategy::Util.sort!(Apple.all, :name)`.
-
-#### Version 1.3
+#### Version 0.1.3
 
 Fixed Bugs:
 
@@ -313,5 +304,26 @@ Added:
 1. Fix deserialization of records with serialized attributes, see https://github.com/orslumen/record-cache/issues/19
 1. Ruby 2 fix
 
+
+#### Version 0.1.2
+
+Refactoring: Moved Serialization, Sorting and Filtering to separate Util class.
+
+Now it is possible to re-use MySQL style sorting (with collation) in your own app, e.g. by calling `RecordCache::Strategy::Util.sort!(Apple.all, :name)`.
+
+
+#### Version 0.1.1
+
+Added support for Rails 3.1
+
+
+#### Version 0.1.0
+
+First version, with the following Strategies:
+
+1. Request Cache
+1. ID Cache
+1. Index Cache
+
 ----
-Copyright (c) 2011-2014 Orslumen, released under the MIT license
+Copyright (c) 2011-2015 Orslumen, released under the MIT license

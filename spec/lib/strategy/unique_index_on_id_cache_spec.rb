@@ -298,28 +298,32 @@ RSpec.describe RecordCache::Strategy::UniqueIndexCache do
       end
     end
 
-    it "should not update the cache for the rolled back inner transaction" do
-      apple1, apple2 = nil
+    # does not work for Rails 3.0
+    unless ActiveRecord::VERSION::MAJOR == 3 && ActiveRecord::VERSION::MINOR == 0
+      it "should not update the cache for the rolled back inner transaction" do
+        apple1, apple2 = nil
 
-      ActiveRecord::Base.transaction do
-        apple1 = Apple.find(1)
-        apple1.name = "Committed Apple 1"
-        apple1.save!
+        ActiveRecord::Base.transaction do
+          apple1 = Apple.find(1)
+          apple1.name = "Committed Apple 1"
+          apple1.save!
 
-        ActiveRecord::Base.transaction(requires_new: true) do
-          apple2 = Apple.find(2)
-          apple2.name = "Rollback Apple 2"
-          apple2.save!
+          ActiveRecord::Base.transaction(requires_new: true) do
+            apple2 = Apple.find(2)
+            apple2.name = "Rollback Apple 2"
+            apple2.save!
 
-          raise ActiveRecord::Rollback, "oops"
+            raise ActiveRecord::Rollback, "oops"
+          end
         end
+
+        expect{ apple1 = Apple.find(1) }.to use_cache(Apple).on(:id)
+        expect(apple1.name).to eq("Committed Apple 1")
+
+        expect{ apple2 = Apple.find(2) }.to use_cache(Apple).on(:id)
+        expect(apple2.name).to eq("Adams Apple 2")
       end
-
-      expect{ apple1 = Apple.find(1) }.to use_cache(Apple).on(:id)
-      expect(apple1.name).to eq("Committed Apple 1")
-
-      expect{ apple2 = Apple.find(2) }.to use_cache(Apple).on(:id)
-      expect(apple2.name).to eq("Adams Apple 2")
     end
+
   end
 end

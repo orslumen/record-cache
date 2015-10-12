@@ -36,6 +36,9 @@ load(dir + "/db/schema.rb")
 Dir["#{dir}/models/*.rb"].each {|f| load(f) }
 load(dir + "/db/seeds.rb")
 
+# backwards compatibility for previous versions of rails
+load(dir + "/initializers/backward_compatibility.rb")
+
 # Clear cache after each test
 RSpec.configure do |config|
   config.disable_monkey_patching!
