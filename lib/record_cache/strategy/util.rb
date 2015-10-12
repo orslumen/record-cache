@@ -17,7 +17,7 @@ module RecordCache
         # deserialize a cached record
         def deserialize(serialized)
           record = serialized[CLASS_KEY].constantize.allocate
-          attributes = serialized[ATTRIBUTES_KEY]
+          attributes = serialized[ATTRIBUTES_KEY].clone
           record.class.serialized_attributes.keys.each do |attribute|
             if attributes[attribute].respond_to?(:unserialize)
               if attributes[attribute].method(:unserialize).arity > 0
