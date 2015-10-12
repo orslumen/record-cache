@@ -111,7 +111,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  activerecord (< 4.1)
+  activerecord (< 4.2)
   appraisal
   bundler
   database_cleaner
