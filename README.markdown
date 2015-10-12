@@ -96,6 +96,11 @@ The following options are available:
     _Use this option in case this table is small, is only rarely updated and needs to be retrieved as a whole in most cases.
      For example to fill a Language or Country drop-down._
 
+- <a name="ttl" />`:ttl`: Time to live (default: `infinitely`)
+
+    _In case not all updates go through Rails (not a recommended design) this option makes it possible to specify a TTL for the cached
+     records._
+
 #### Tests
 
 To switch off Record Cache during the tests, add the following line to /config/environments/test.rb:
