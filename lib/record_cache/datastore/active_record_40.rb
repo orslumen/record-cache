@@ -399,6 +399,7 @@ module RecordCache
 
       module InstanceMethods
         def delete_records_with_record_cache(records, method)
+          records = load_target if records == :all
           # invalidate :id cache for all records
           records.each{ |record| record.class.record_cache.invalidate(record.id) if record.class.record_cache? unless record.new_record? }
           # invalidate the referenced class for the attribute/value pair on the index cache
