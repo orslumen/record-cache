@@ -20,9 +20,9 @@ module RecordCache
 
       module InstanceMethods
 
-        def renew_with_reset(key, opts = {})
+        def renew_with_reset(key, write = true, opts = {})
           updated_version_keys << key
-          renew_without_reset(key, opts)
+          renew_without_reset(key, write, opts)
         end
 
         def reset!

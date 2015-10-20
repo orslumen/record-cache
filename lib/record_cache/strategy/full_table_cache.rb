@@ -36,7 +36,7 @@ module RecordCache
         # no records found?
         unless records
           # renew the version in case the version was not known
-          current_version ||= version_store.renew(key, version_opts)
+          current_version ||= version_store.renew_for_read(key, version_opts)
           # retrieve all records from the DB
           records = from_db(key, current_version)
         end

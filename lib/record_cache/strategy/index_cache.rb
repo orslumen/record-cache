@@ -54,7 +54,7 @@ module RecordCache
         # retrieve the current version of the ids list
         current_version = version_store.current(key)
         # create the versioned key, renew the version in case it was missing in the version store
-        versioned_key = versioned_key(key, current_version || version_store.renew(key, version_opts))
+        versioned_key = versioned_key(key, current_version || version_store.renew_for_read(key, version_opts))
         # retrieve the ids from the local cache based on the current version from the version store
         ids = current_version ? fetch_ids_from_cache(versioned_key) : nil
         # logging (only in debug mode!) and statistics

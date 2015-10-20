@@ -49,7 +49,30 @@ RSpec.describe RecordCache::VersionStore do
       @version_store.renew("unknown_key")
       expect(@version_store.current("unknown_key")).to_not be_nil
     end
-    
+
+    it "should call on_write_failure hook when renew fails" do
+      allow(@version_store.store).to receive(:write) { false }
+      failed = nil
+      @version_store.on_write_failure{ |key| failed = key }
+      @version_store.renew("key1")
+      expect(failed).to eq("key1")
+    end
+
+    it "should not call on_write_failure hook when renew_for_read fails" do
+      allow(@version_store.store).to receive(:write) { false }
+      failed = "nothing failed"
+      @version_store.on_write_failure{ |key| failed = key }
+      @version_store.renew_for_read("key1")
+      expect(failed).to eq("nothing failed")
+    end
+
+    it "should not call on_write_failure hook when renew succeeds" do
+      failed = "nothing failed"
+      @version_store.on_write_failure{ |key| failed = key }
+      @version_store.renew("key1")
+      expect(failed).to eq("nothing failed")
+    end
+
     it "should write to the debug log" do
       expect{ @version_store.renew("key1") }.to log(:debug, /Version Store: renew key1: nil => \d+/)
     end
@@ -75,6 +98,21 @@ RSpec.describe RecordCache::VersionStore do
       expect(@version_store.current("unknown_key")).to be_nil
       expect(@version_store.delete("unknown_key")).to be_falsey
       expect(@version_store.current("unknown_key")).to be_nil
+    end
+
+    it "should call on_write_failure hook when delete fails" do
+      allow(@version_store.store).to receive(:delete) { false }
+      failed = nil
+      @version_store.on_write_failure{ |key| failed = key }
+      @version_store.delete("key1")
+      expect(failed).to eq("key1")
+    end
+
+    it "should not call on_write_failure hook when delete succeeds" do
+      failed = "nothing failed"
+      @version_store.on_write_failure{ |key| failed = key }
+      @version_store.delete("key1")
+      expect(failed).to eq("nothing failed")
     end
 
     it "should write to the debug log" do

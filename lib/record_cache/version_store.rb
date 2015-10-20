@@ -9,6 +9,10 @@ module RecordCache
       @store = store
     end
 
+    def on_write_failure(&blk)
+      @on_write_failure = blk
+    end
+
     # Retrieve the current versions for the given key
     # @return nil in case the key is not known in the version store
     def current(key)
@@ -24,11 +28,16 @@ module RecordCache
       Hash[id_key_map.map{ |id, key| [id, current_versions[key]] }]
     end
 
+    def renew_for_read(key, options = {})
+      renew(key, false, options)
+    end
+
     # Call this method to reset the key to a new (unique) version
-    def renew(key, options = {})
+    def renew(key, write = true, options = {})
       new_version = (Time.current.to_f * 10000).to_i
       seconds = options[:ttl] ? options[:ttl] + (rand(options[:ttl] / 2) * [1, -1].sample) : nil
-      @store.write(key, new_version, {:expires_in => seconds})
+      written = @store.write(key, new_version, {:expires_in => seconds})
+      @on_write_failure.call(key) if !written && write && @on_write_failure
       RecordCache::Base.logger.debug{ "Version Store: renew #{key}: nil => #{new_version}" }
       new_version
     end
@@ -47,12 +56,13 @@ module RecordCache
     # @deprecated: use renew instead
     def increment(key)
       RecordCache::Base.logger.debug{ "increment is deprecated, use renew instead. Called from: #{caller[0]}" }
-      renew(key)
+      renew(key, true)
     end
 
     # Delete key from the version store (records cached in the Record Store belonging to this key will become unreachable)
     def delete(key)
       deleted = @store.delete(key)
+      @on_write_failure.call(key) if !deleted && @on_write_failure
       RecordCache::Base.logger.debug{ "Version Store: deleted #{key}" }
       deleted
     end

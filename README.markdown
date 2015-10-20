@@ -42,6 +42,7 @@ In /config/initializers/record_cache.rb:
     # Different logger
     # RecordCache::Base.logger = Logger.new(STDOUT)
 
+
 #### Models
 
 Define the Caching Strategy in your models.
@@ -101,6 +102,11 @@ The following options are available:
     _In case not all updates go through Rails (not a recommended design) this option makes it possible to specify a TTL for the cached
      records._
 
+It is also possible to listen to write failures on the Version Store that could lead to stale results: 
+
+    RecordCache::Base.version_store.on_write_failure{ |key| clear_this_key_after_2_seconds(key) }
+
+
 #### Tests
 
 To switch off Record Cache during the tests, add the following line to /config/environments/test.rb:
@@ -133,7 +139,7 @@ Cucumber example, in features/support/env.rb:
 Restrictions
 ------------
 
-1. This gem is dependent on Rails 3 and Rails 4
+1. This gem is dependent on Rails 3 or Rails 4
 
 2. Only Active Record is supported as a data store.
 
@@ -159,6 +165,11 @@ Restrictions
    in the database.
    To overcome this, skip using nested transactions, or disable record cache and manually invalidate all records that were
    possibly updated within the nested transactions.
+   
+1. Flapping version store. Due to network hiccups the version store may not always be accessible to read/write the current
+   version of a record. This may lead to stale results. The `on_write_failure` hook can be used to be informed when the
+   communication to the version store fails and to take appropriate action, e.g. resetting the version store for that
+   record some time later.
 
 Explain
 -------
@@ -256,7 +267,7 @@ Development
     $ appraisal rails-32 rake
 
     # run a single spec
-    $ appraisal rails-32 rspec ./spec/lib/strategy/base_spec.rb:61
+    $ appraisal rails-40 rspec ./spec/lib/strategy/base_spec.rb:61
 
 Deploying the gem:
 
@@ -274,6 +285,11 @@ Switch on DEBUG logging (`config.log_level = :debug` in development.rb) to get m
 
 Release Notes
 -------------
+
+#### Version 0.1.5 (next version)
+
+1. On-write-failure hook on the version store
+1. 
 
 #### Version 0.1.4
 
