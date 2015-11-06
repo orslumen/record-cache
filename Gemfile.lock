@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    record-cache (0.1.4)
+    record-cache (0.1.5)
       rails
 
 GEM
