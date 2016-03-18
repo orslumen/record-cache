@@ -51,7 +51,7 @@ GEM
     method_source (0.8.2)
     mime-types (2.6.2)
     minitest (5.8.1)
-    mysql2 (0.4.1)
+    mysql2 (0.4.3)
     pry (0.10.2)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
