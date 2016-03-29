@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'timecop'
 
 RSpec.describe RecordCache::Strategy::IndexCache do
 
@@ -251,6 +252,14 @@ RSpec.describe RecordCache::Strategy::IndexCache do
       expect(address.location[:dms_lat]).to eq(%(27\u00B0 10' 30.0540" N))
       address.name = 'updated name'
       address.save!
+    end
+
+    it "should honor version store TTL" do
+      Apple.record_cache[:store_id].invalidate(1)
+      expect(RecordCache::Base.version_store.store.read('rc/apl/1')).not_to be_nil
+      Timecop.travel(1.hour.from_now) do
+        expect(RecordCache::Base.version_store.store.read('rc/apl/1')).to be_nil
+      end
     end
   end
 

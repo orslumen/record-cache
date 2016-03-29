@@ -103,7 +103,7 @@ module RecordCache
         # retrieve local version and increment version store
         key = cache_key(value)
         old_version = version_store.current(key)
-        new_version = version_store.renew(key, version_opts)
+        new_version = version_store.renew(key, true, version_opts)
         # try to update the ids list based on the last version
         ids = fetch_ids_from_cache(versioned_key(key, old_version))
         if ids
