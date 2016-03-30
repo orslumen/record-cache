@@ -116,6 +116,7 @@ GEM
     test_after_commit (0.2.3)
     thor (0.14.6)
     tilt (1.4.1)
+    timecop (0.8.0)
     treetop (1.4.15)
       polyglot
       polyglot (>= 0.3.1)
@@ -138,3 +139,7 @@ DEPENDENCIES
   simplecov
   sqlite3
   test_after_commit
+  timecop
+
+BUNDLED WITH
+   1.10.6
