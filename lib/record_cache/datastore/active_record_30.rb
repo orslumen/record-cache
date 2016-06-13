@@ -32,11 +32,10 @@ module RecordCache
           arel = sql.instance_variable_get(:@arel)
           sanitized_sql = sanitize_sql(sql)
 
-          records = if connection.instance_variable_get(:@query_cache_enabled)
-                      query_cache = connection.instance_variable_get(:@query_cache)
-                      query_cache["rc/#{sanitized_sql}"] ||= try_record_cache(sanitized_sql, arel)
+          records = if connection.query_cache_enabled
+                      connection.query_cache["rc/#{sanitized_sql}"] ||= try_record_cache(sanitized_sql, arel)
                     elsif connection.open_transactions > RC_TRANSACTIONS_THRESHOLD
-                      connection.send(:select, sanitized_sql, "#{name} Load")
+                      connection.select_all(sanitized_sql, "#{name} Load")
                     else
                       try_record_cache(sanitized_sql, arel)
                     end
@@ -47,7 +46,7 @@ module RecordCache
         def try_record_cache(sql, arel)
           query = arel && arel.respond_to?(:ast) ? RecordCache::Arel::QueryVisitor.new.accept(arel.ast) : nil
           record_cache.fetch(query) do
-            connection.send(:select, sql, "#{name} Load")
+            connection.select_all(sql, "#{name} Load")
           end
         end
 

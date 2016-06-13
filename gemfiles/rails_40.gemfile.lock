@@ -50,7 +50,7 @@ GEM
     mime-types (2.6.2)
     minitest (4.7.5)
     multi_json (1.11.2)
-    mysql2 (0.4.1)
+    mysql2 (0.4.3)
     pry (0.10.2)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
