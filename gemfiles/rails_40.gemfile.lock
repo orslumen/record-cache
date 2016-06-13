@@ -1,7 +1,7 @@
 PATH
   remote: ../
   specs:
-    record-cache (0.1.5)
+    record-cache (0.1.6)
       rails
 
 GEM
@@ -125,4 +125,4 @@ DEPENDENCIES
   timecop
 
 BUNDLED WITH
-   1.10.6
+   1.12.5
